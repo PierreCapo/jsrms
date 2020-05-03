@@ -74,3 +74,9 @@ whereas with the jsrms compiler you can directly write:
 ```C
 rmSetStatusText("", 0.01);
 ```
+
+## Miscellaneous
+
+-   Some enumations are available through the `TERRAINS`, `WATER` and `CLIFF` objects.
+
+-   Because this project is still in Beta, if the typescript compile reports a wrong error and you want to bypass the typescript compiler, you can write `// @ts-ignore` in the line just above the error and Typescript engine won't report this error anymore.
