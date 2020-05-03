@@ -30,15 +30,14 @@ Map written in Typescript => jsrms compiler => Map written in RMS (understandabl
 2. Download Visual Studio Code => it will show you errors reported by Typescript
 3. Install [the Prettier Extention](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) => it will format properly your code on save.
 4. Download [nodejs](https://nodejs.org/en/) => it will install the Javascript Engine
-5. In the command line, run `npm install -g typescript` => it will download typescript on your machine
 
-6. Open the project in VSCode
-7. In the command line, run `npm install` => it will download dependencies from the web
-8. In the command line, run `tsc --watch`
-9. In a second command line, run `npm run start`
+5. Open the project in VSCode
+6. In the command line, run `npm install` => it will download dependencies from the web
+7. In the command line, run `npm run tsc`
+8. In a second command line, run `npm run start`
 
-10. start editing the `map.ts` file
-11. Open AOE3 and select the "\_\_\_test" map in your game lobby.
+9. start editing the `map.ts` file
+10. Open AOE3 and select the "\_\_\_test" map in your game lobby.
 
 ## Documentation
 

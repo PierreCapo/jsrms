@@ -1,6 +1,7 @@
-// Text
-// These status text lines are used to manually animate the map generation progress bar
 rmSetStatusText('', 0.01);
 
-// ***************** CHOOSE NATIVES ******************
-string toto = "aa\\bb";
+var size = 2.0 * sqrt(cNumberNonGaiaPlayers * 2000);
+rmSetMapSize(size, size);
+rmTerrainInitialize(TERRAINS.ANDES_GROUND07_AND, 4.0);
+rmSetMapType('sonora');
+rmSetMapType('grass');
