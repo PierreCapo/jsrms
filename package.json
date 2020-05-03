@@ -1,0 +1,21 @@
+{
+    "dependencies": {
+        "acorn": "^7.1.1",
+        "date-fns": "^2.12.0",
+        "nodemon": "^2.0.3",
+        "typescript": "^3.8.3",
+        "uuid": "^8.0.0"
+    },
+    "scripts": {
+        "start": "nodemon -e js .\\compiler\\index.js ",
+        "compile": "typescript --p .\\"
+    },
+    "devDependencies": {
+        "@typescript-eslint/eslint-plugin": "^2.30.0",
+        "@typescript-eslint/parser": "^2.30.0",
+        "eslint": "^6.8.0",
+        "eslint-config-prettier": "^6.11.0",
+        "eslint-plugin-prettier": "^3.1.3",
+        "prettier": "^2.0.5"
+    }
+}

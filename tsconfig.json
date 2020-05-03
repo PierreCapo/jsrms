@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "module": "commonjs",
+        "lib": ["es2017"],
+        "strict": false,
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "noEmitOnError": true,
+        "outDir": "./compiler"
+    }
+}
