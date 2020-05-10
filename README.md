@@ -26,9 +26,11 @@ Map written in Typescript => jsrms compiler => Map written in RMS (understandabl
 
 ## Installation
 
+[Youtube video of the installation](https://www.youtube.com/watch?v=S0qqcyZ8qe0&feature=emb_logo)
+
 1. Download this project => it downloads the compiler
 2. Download Visual Studio Code => it will show you errors reported by Typescript
-3. Install [the Prettier Extention](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) => it will format properly your code on save.
+3. Install [the Prettier Extension](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) => it will format properly your code on save.
 4. Download [nodejs](https://nodejs.org/en/) => it will install the Javascript Engine
 
 5. Open the project in VSCode
@@ -40,6 +42,8 @@ Map written in Typescript => jsrms compiler => Map written in RMS (understandabl
 10. Open AOE3 and select the "\_\_\_test" map in your game lobby.
 
 ## Documentation
+
+### Syntax difference
 
 I chose the Typescript language because the syntax is actually really similar to the RMS one, so there is not a lot of difference.
 
@@ -53,6 +57,25 @@ I chose the Typescript language because the syntax is actually really similar to
 | For loop                      | `for(i=0; <10)`                    | `for(i=0; i <10;)`              |
 | String with backslash         | `"amazonia\ground3"`               | `"amazonia\\ground3"`           |
 | Functions with unique strings | `rmCreateArea("UNIQUE Area name")` | `rmCreateArea("whatever name")` |
+
+### Enumerations available
+
+It has always been annoying to find what is the right syntax for texture elements. The jsrms compiler grants you `TERRAINS`, `CLIFF` and `WATER` enumerations to tackle that issue.
+So instead of writing:
+
+```Javascript
+var terrainType = "andes\\andes_ground08_and"
+```
+
+you can write
+
+```Javascript
+var terrainType = TERRAINS.ANDES_GROUND08_AND
+```
+
+The main advantage is that all textures are documented, so the autocomplete is available and it guarantees that you aren't making any typo.
+
+### No header needed
 
 The last remaining differencies are the file structure. The compiler already grants you the common `include` statement
 
@@ -75,8 +98,17 @@ whereas with the jsrms compiler you can directly write:
 rmSetStatusText("", 0.01);
 ```
 
-## Miscellaneous
+## Specifying a custom path for the generated map
 
--   Some enumations are available through the `TERRAINS`, `WATER` and `CLIFF` objects.
+Edit the jsrms.config.json file and change the `outputFolderPath` to write the one that suits your needs
+`Documents\\My Games\\Age of Empires 3\\RM3` is the path used by default by the jsrms compiler. Don't forget to **double the backslash**
 
--   Because this project is still in Beta, if the typescript compile reports a wrong error and you want to bypass the typescript compiler, you can write `// @ts-ignore` in the line just above the error and Typescript engine won't report this error anymore.
+```JSON
+{
+    "sourceFile": "./compiler/map.js",
+    "outputFolderPath": "C:\\Users\\Tom Smith\\Documents\\My Games\\Age of Empires 3\\RM3",
+    "mapName": "___test",
+    "mapDisplayName": "___test",
+    "authorName": ""
+}
+```

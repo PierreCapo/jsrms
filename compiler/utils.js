@@ -451,6 +451,7 @@ const identifierMapper = {
     YELLOW_RIVER_SHORELINE1_YELLOW_RIV: 'yellow_river\\shoreline1_yellow_riv',
     CEYLON_GROUND_SAND1_CEYLON: 'ceylon\\ground_sand1_ceylon',
 
+    //  water
     ATLANTIC_COAST: 'atlantic coast',
     CARIBBEAN_COAST: 'caribbean coast',
     CINEMATIC_SHIP_OCEAN: 'cinematic ship ocean',
@@ -486,6 +487,7 @@ const identifierMapper = {
     INDIA_HC: 'india_hc',
     YELLOW_RIVER_FLOODED: 'yellow river flooded',
 
+    // cliff
     ANDES: 'andes',
     CALIFORNIA: 'california',
     DECCAN_PLATEAU: 'deccan plateau',

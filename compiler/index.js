@@ -35,6 +35,20 @@ ${codeGenerated}
 }
 `;
 
+if (!fs.existsSync(pathToSave)) {
+    if (!jsrmsConfig.outputFolderPath) {
+        throw Error(`The jsrms compiler is unable to find the following path used by default to save maps in your machine: ${pathToSave} 
+        Please edit the jsrms.config.json file to specify the outputFolderPath where you want the map file generated to be placed.
+        Check the README file for more information on how to specify a custom path.
+        `);
+    } else {
+        throw Error(`The jsrms compiler is unable to find the following path that you mentioned in the jsrms.config.json file to save maps in your machine: ${pathToSave} 
+        Please verify you haven't written a typo in the outputFolderPath key.
+        Check the README file for more information on how to specify a custom path.
+        `);
+    }
+}
+
 fs.writeFileSync(pathXS, result);
 fs.writeFileSync(pathXML, utils.generateXml(jsrmsConfig.mapDisplayName));
 console.log(format(Date.now(), 'HH:mm:ss') + ' - Map file has been generated at : ' + pathXS);
