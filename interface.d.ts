@@ -276,7 +276,7 @@ declare const rmPlaceObjectDefAtPoint: (defID: integer, playerID: integer, point
 /**
  * Place object definition at specific location for given player.
  */
-declare const rmPlaceObjectDefAtLoc: (defID: integer, playerID: integer, xFraction: float, zFraction: float, placeCount?: integer) => void;
+declare const rmPlaceObjectDefAtLoc: (defID: integer, playerID: integer, xFraction: float, zFraction: float, placeCount?: integer) => number;
 /**
  * Add item to object definition.
  */
@@ -680,7 +680,7 @@ declare const rmAddAreaInfluencePoint: (areaID: Area, xFraction: float, zFractio
 /**
  * Gets area ID for given area name.
  */
-declare const rmAreaID: (name: string) => void;
+declare const rmAreaID: (name: string) => number;
 /**
  * Sets how smoothly area height blends into surroundings.
  */

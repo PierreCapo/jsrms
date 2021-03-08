@@ -1,686 +1,545 @@
-// Text
-// These status text lines are used to manually animate the map generation progress bar
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+// Gold Coast
 rmSetStatusText('', 0.01);
-// ***************** CHOOSE NATIVES ******************
-var subCiv0 = -1;
-var subCiv1 = -1;
-var subCiv2 = -1;
-// Which natives?  1 = Maya/Apache, 2 = Navajo
-var whichNatives = -1;
-whichNatives = rmRandInt(1, 2);
-if (rmAllocateSubCivs(3) == true) {
-    if (whichNatives == 1) {
-        // Always Maya.
-        subCiv0 = rmGetCivID('maya');
-        if (subCiv0 >= 0)
-            rmSetSubCiv(0, 'maya');
-        // And for now, always apache.
-        subCiv1 = rmGetCivID('apache');
-        if (subCiv1 >= 0)
-            rmSetSubCiv(1, 'apache');
-        // And for now, always apache.
-        subCiv2 = rmGetCivID('apache');
-        if (subCiv2 >= 0)
-            rmSetSubCiv(2, 'apache');
-    }
-    else {
-        subCiv0 = rmGetCivID('navajo');
-        if (subCiv0 >= 0)
-            rmSetSubCiv(0, 'navajo');
-        subCiv1 = rmGetCivID('navajo');
-        if (subCiv1 >= 0)
-            rmSetSubCiv(1, 'navajo');
-        subCiv2 = rmGetCivID('navajo');
-        if (subCiv2 >= 0)
-            rmSetSubCiv(2, 'navajo');
-    }
-}
-// ********************* MAP PARAMETERS ************************
-// Picks the map size
-//  var playerTiles=10000; old setting
-var playerTiles = 9000;
-if (cNumberNonGaiaPlayers > 4)
-    playerTiles = 8000;
-if (cNumberNonGaiaPlayers > 6)
-    playerTiles = 6000;
+var some_1 = require("./some");
+/// Nature variables
+var mainTerrainType = some_1.TERRAINS.GREAT_PLAINS_DEFAULT;
 /*
-   if(cMapSize == 1)
-   {
-      playerTiles = 18000;
-      rmEchoInfo("Large map");
-   }
-   */
-var size = 2.0 * sqrt(cNumberNonGaiaPlayers * playerTiles);
-rmEchoInfo('Map size=' + size + 'm x ' + size + 'm');
-rmSetMapSize(size, size);
-// rmSetMapElevationParameters(cElevTurbulence, 0.4, 6, 0.5, 3.0);  // DAL - original
-rmSetMapElevationParameters(cElevTurbulence, 0.02, 4, 0.7, 8.0);
-rmSetMapElevationHeightBlend(1);
-// Picks a default water height
-rmSetSeaLevel(4.0);
-// Picks default terrain and water
-rmSetSeaType('Amazon River');
-rmSetBaseTerrainMix('sonora_dirt');
-rmTerrainInitialize(TERRAINS.ANDES_GROUND07_AND, 4.0);
-rmSetMapType('sonora');
-rmSetMapType('grass');
-rmSetMapType('land');
-rmSetLightingSet('Sonora');
-// Choose mercs.
+let islandTerrainType = TERRAINS.CALIFORNIA_GROUNDSHORE1_CAL;
+let waterType = WATER.CARIBBEAN_COAST;
+let cliffType = CLIFF.CALIFORNIA;
+
+let mapType1 = 'borneo';
+let mapType2 = 'water';
+let tradeRouteType = 'dirt_trail';
+
+let hunt1Type = 'gazelle';
+let hunt2Type = 'ypWildElephant';
+let fishType = 'FishSalmon';
+let treeType = 'TreeCaribbean';
+let mineType = 'minegold';
+let forestType = 'carolina pine forest';
+
+/// Class variables
+
+let socketClass = rmDefineClass('sockets');
+let cliffClass = rmDefineClass('cliffs');
+let forestClass = rmDefineClass('forest');
+let startingUnitClass = rmDefineClass('startingUnit');
+let townCenterClass = rmDefineClass('townCenter');
+let islandClass = rmDefineClass('islands');
+let waterClass = rmDefineClass('water');
+let huntClass = rmDefineClass('hunts');
+let fishClass = rmDefineClass('fishes');
+let nuggetClass = rmDefineClass('nuggets');
+
 chooseMercs();
-// Corner constraint.
-rmSetWorldCircleConstraint(false);
-var classPlayer = rmDefineClass('player');
-rmDefineClass('classHill');
-rmDefineClass('classPatch');
-rmDefineClass('starting settlement');
-rmDefineClass('startingUnit');
-rmDefineClass('classForest');
-rmDefineClass('importantItem');
-rmDefineClass('natives');
-rmDefineClass('classCliff');
-rmDefineClass('secrets');
-rmDefineClass('classNugget');
-rmDefineClass('center');
-var canyon = rmDefineClass('canyon');
-var avoidVultures = rmCreateTypeDistanceConstraint('avoids Vultures', 'PropVulturePerching', 40.0);
-var avoidCanyons = rmCreateClassDistanceConstraint('avoid canyons', rmClassID('canyon'), 35.0);
-var shortAvoidCanyons = rmCreateClassDistanceConstraint('short avoid canyons', rmClassID('canyon'), 15.0);
-var veryShortAvoidCanyons = rmCreateClassDistanceConstraint('very short avoid canyons', rmClassID('canyon'), 4.0);
-var avoidNatives = rmCreateClassDistanceConstraint('avoid natives', rmClassID('natives'), 15.0);
-var shortAvoidNatives = rmCreateClassDistanceConstraint('short avoid natives', rmClassID('natives'), 10.0);
-var avoidSilver = rmCreateTypeDistanceConstraint('gold avoid gold', 'Mine', 55.0);
-var shortAvoidSilver = rmCreateTypeDistanceConstraint('short gold avoid gold', 'Mine', 20.0);
-var avoidImpassableLand = rmCreateTerrainDistanceConstraint('avoid impassable land', 'Land', false, 10.0);
-var shortAvoidImpassableLand = rmCreateTerrainDistanceConstraint('short avoid impassable land', 'Land', false, 4.0);
-var centerConstraintFar = rmCreateClassDistanceConstraint('stay away from center far', rmClassID('center'), rmXFractionToMeters(0.23));
-var centerConstraint = rmCreateClassDistanceConstraint('stay away from center', rmClassID('center'), rmXFractionToMeters(0.1));
-var forestConstraint = rmCreateClassDistanceConstraint('forest vs. forest', rmClassID('classForest'), 50.0);
-var shortForestConstraint = rmCreateClassDistanceConstraint('short forest vs. forest', rmClassID('classForest'), 10.0);
-var avoidHill = rmCreateTypeDistanceConstraint('avoid hill', 'ypKingsHill', 8.0);
-var avoidResource = rmCreateTypeDistanceConstraint('resource avoid resource', 'resource', 10.0);
-var shortAvoidResource = rmCreateTypeDistanceConstraint('short resource avoid resource', 'resource', 4.0);
-var avoidBuzzards = rmCreateTypeDistanceConstraint('buzzard avoid buzzard', 'BuzzardFlock', 70.0);
-var avoidBison = rmCreateTypeDistanceConstraint('avoid Bison', 'Bison', 40);
-var avoidPronghorn = rmCreateTypeDistanceConstraint('avoid Pronghorn', 'Pronghorn', 40);
-var avoidTradeRoute = rmCreateTradeRouteDistanceConstraint('trade route', 5.0);
-var longPlayerConstraint = rmCreateClassDistanceConstraint('long stay away from players', classPlayer, 40.0);
-var playerConstraint = rmCreateClassDistanceConstraint('stay away from players', classPlayer, 30.0);
-var mediumPlayerConstraint = rmCreateClassDistanceConstraint('medium stay away from players', classPlayer, 20.0);
-var shortPlayerConstraint = rmCreateClassDistanceConstraint('stay away from players short', classPlayer, 8.0);
-var avoidNugget = rmCreateClassDistanceConstraint('nugget vs. nugget long', rmClassID('classNugget'), 60.0);
-var shortAvoidNugget = rmCreateClassDistanceConstraint('nugget vs. nugget short', rmClassID('classNugget'), 8.0);
-var avoidTradeRouteSockets = rmCreateTypeDistanceConstraint('avoid Trade Socket', 'sockettraderoute', 10);
-var avoidStartingUnits = rmCreateClassDistanceConstraint('objects avoid starting units', rmClassID('startingUnit'), 8.0);
-var circleConstraint = rmCreatePieConstraint('circle Constraint', 0.5, 0.5, 0, rmZFractionToMeters(0.47), rmDegreesToRadians(0), rmDegreesToRadians(360));
-var patchConstraint = rmCreateClassDistanceConstraint('patch vs. patch', rmClassID('classPatch'), 5.0);
-// starting resources
-var TCID = rmCreateObjectDef('player TC');
-if (rmGetNomadStart()) {
-    rmAddObjectDefItem(TCID, 'CoveredWagon', 1, 0.0);
-}
-else {
-    rmAddObjectDefItem(TCID, 'townCenter', 1, 0);
-}
-rmSetObjectDefMinDistance(TCID, 0.0);
-rmSetObjectDefMaxDistance(TCID, 10.0);
-rmAddObjectDefConstraint(TCID, avoidTradeRoute);
-rmAddObjectDefToClass(TCID, rmClassID('player'));
-rmAddObjectDefToClass(TCID, rmClassID('startingUnit'));
-var startingUnits = rmCreateStartingUnitsObjectDef(5.0);
-rmSetObjectDefMinDistance(startingUnits, 8.0);
-rmSetObjectDefMaxDistance(startingUnits, 12.0);
-rmAddObjectDefToClass(startingUnits, rmClassID('startingUnit'));
-rmAddObjectDefConstraint(startingUnits, avoidStartingUnits);
-var playerSilverID = rmCreateObjectDef('player silver');
-rmAddObjectDefItem(playerSilverID, 'mine', 1, 0);
-rmAddObjectDefConstraint(playerSilverID, avoidTradeRoute);
-rmSetObjectDefMinDistance(playerSilverID, 20.0);
-rmSetObjectDefMaxDistance(playerSilverID, 25.0);
-//rmAddObjectDefConstraint(playerSilverID, avoidAll);
-rmAddObjectDefToClass(playerSilverID, rmClassID('startingUnit'));
-rmAddObjectDefConstraint(playerSilverID, avoidImpassableLand);
-rmAddObjectDefConstraint(playerSilverID, avoidStartingUnits);
-var StartAreaTreeID = rmCreateObjectDef('starting trees');
-rmAddObjectDefItem(StartAreaTreeID, 'TreeSonora', rmRandInt(7, 10), 4.0);
-rmAddObjectDefItem(StartAreaTreeID, 'UnderbrushDesert', rmRandInt(4, 6), 4.0);
-rmSetObjectDefMinDistance(StartAreaTreeID, 8);
-rmSetObjectDefMaxDistance(StartAreaTreeID, 15);
-rmAddObjectDefToClass(StartAreaTreeID, rmClassID('startingUnit'));
-rmAddObjectDefConstraint(StartAreaTreeID, avoidImpassableLand);
-rmAddObjectDefConstraint(StartAreaTreeID, avoidTradeRoute);
-//rmAddObjectDefConstraint(StartAreaTreeID, shortAvoidSilver);
-rmAddObjectDefConstraint(StartAreaTreeID, avoidStartingUnits);
-//rmAddObjectDefConstraint(StartAreaTreeID, avoidResource);
-var StartTurkeyID = rmCreateObjectDef('starting berries');
-rmAddObjectDefItem(StartTurkeyID, 'berrybush', 4, 4.0);
-//rmSetObjectDefCreateHerd(StartTurkeyID, true);
-rmSetObjectDefMinDistance(StartTurkeyID, 10);
-rmSetObjectDefMaxDistance(StartTurkeyID, 18);
-rmAddObjectDefToClass(StartTurkeyID, rmClassID('startingUnit'));
-rmAddObjectDefConstraint(StartTurkeyID, avoidImpassableLand);
-rmAddObjectDefConstraint(StartTurkeyID, avoidTradeRoute);
-rmAddObjectDefConstraint(StartTurkeyID, avoidStartingUnits);
-rmAddObjectDefConstraint(StartTurkeyID, avoidResource);
-// Text
-rmSetStatusText('', 0.2);
-var canyonConstraint = rmCreateClassDistanceConstraint('canyons start away from each other', canyon, 5.0);
-var failCount = 0;
-var numTries = cNumberNonGaiaPlayers * 15;
-// Text
-rmSetStatusText('', 0.6);
-// ************************* TRADE ROUTE **********************
-var socketID = rmCreateObjectDef('sockets to dock Trade Posts');
-rmAddObjectDefItem(socketID, 'SocketTradeRoute', 1, 0.0);
-rmSetObjectDefAllowOverlap(socketID, true);
+let size = 2.0 * sqrt(cNumberNonGaiaPlayers * 12000);
+rmSetMapSize(size, size);
+rmTerrainInitialize(mainTerrainType, 4.0);
+rmSetMapType(mapType1);
+rmSetMapType(mapType2);
+rmSetSeaLevel(1.0);
+rmSetWorldCircleConstraint(true);
+
+let avoidAll = rmCreateTypeDistanceConstraint('avoid all', 'all', 6.0);
+let avoidTownCenterSmall = rmCreateClassDistanceConstraint('town center far', townCenterClass, 20.0);
+let circleConstraint = rmCreatePieConstraint('circle Constraint', 0.5, 0.5, 0, rmZFractionToMeters(0.48), rmDegreesToRadians(0), rmDegreesToRadians(360));
+let avoidWater = rmCreateClassDistanceConstraint('water constraint', waterClass, 7.0);
+
+let avoidHunt = rmCreateClassDistanceConstraint('hunt constraint', huntClass, 52.0);
+let avoidHuntSmall = rmCreateClassDistanceConstraint('avoid hunt small', huntClass, 12.0);
+let avoidFish = rmCreateClassDistanceConstraint('avoid fish', fishClass, 12.0);
+let avoidSocket = rmCreateClassDistanceConstraint('socket avoidance', socketClass, 10.0);
+let avoidTradeRoute = rmCreateTradeRouteDistanceConstraint('trade route', 12.0);
+let avoidNugget = rmCreateClassDistanceConstraint('nugget avoid nugget', nuggetClass, 30.0);
+
+let southWater = rmCreateArea('south water');
+rmAddAreaToClass(southWater, waterClass);
+rmSetAreaSize(southWater, 0.3, 0.3);
+rmSetAreaLocation(southWater, 0, 0);
+rmSetAreaCoherence(southWater, 1.0);
+rmAddAreaInfluenceSegment(southWater, 0.2, 0.4, 0.4, 0.2);
+rmAddAreaInfluenceSegment(southWater, 0.1, 0.47, 0.47, 0.1);
+rmAddAreaInfluenceSegment(southWater, 0, 0.55, 0.55, 0);
+rmSetAreaEdgeFilling(southWater, 0);
+rmSetAreaWaterType(southWater, waterType);
+rmSetAreaObeyWorldCircleConstraint(southWater, false);
+rmBuildArea(southWater);
+
+let northWater = rmCreateArea('north water');
+rmAddAreaToClass(northWater, waterClass);
+rmSetAreaSize(northWater, 0.05, 0.05);
+rmSetAreaLocation(northWater, 0.9, 0.9);
+rmSetAreaCoherence(northWater, 0.7);
+rmSetAreaSmoothDistance(northWater, 8);
+rmAddAreaInfluenceSegment(northWater, 0.9, 0.9, 0.77, 0.77);
+rmSetAreaWaterType(northWater, waterType);
+rmSetAreaObeyWorldCircleConstraint(northWater, false);
+rmBuildArea(northWater);
+
+let cliffWest = rmCreateArea('cliff');
+rmAddAreaToClass(cliffWest, cliffClass);
+rmSetAreaSize(cliffWest, 0.003, 0.003);
+rmSetAreaLocation(cliffWest, 0.4, 0.65);
+rmSetAreaCliffType(cliffWest, cliffType);
+rmSetAreaCliffEdge(cliffWest, 1, 1, 0.1, 1.0, 0);
+rmSetAreaCliffPainting(cliffWest, false, true, true, 1.5, true);
+rmSetAreaCliffHeight(cliffWest, 10, 0.0, 0);
+rmSetAreaHeightBlend(cliffWest, 1);
+rmSetAreaCoherence(cliffWest, 0.7);
+rmAddAreaInfluenceSegment(cliffWest, 0.4, 0.65, 0.45, 0.65);
+rmBuildArea(cliffWest);
+
+let cliffEast = rmCreateArea('cliff');
+rmAddAreaToClass(cliffEast, cliffClass);
+rmSetAreaSize(cliffEast, 0.003, 0.003);
+rmSetAreaLocation(cliffEast, 0.65, 0.4);
+rmSetAreaCliffType(cliffEast, cliffType);
+rmSetAreaCliffEdge(cliffEast, 1, 1, 0.1, 1.0, 0);
+rmSetAreaCliffPainting(cliffEast, false, true, true, 1.5, true);
+rmSetAreaCliffHeight(cliffEast, 10, 0.0, 0);
+rmSetAreaHeightBlend(cliffEast, 1);
+rmSetAreaCoherence(cliffEast, 0.7);
+rmAddAreaInfluenceSegment(cliffEast, 0.65, 0.4, 0.65, 0.45);
+rmBuildArea(cliffEast);
+
+let avoidCliffs = rmCreateClassDistanceConstraint('avoid cliffs', cliffClass, 6.0);
+let avoidIslands = rmCreateClassDistanceConstraint('avoid islands', islandClass, 15.0);
+
+let westIsland = rmCreateArea('west island');
+rmAddAreaToClass(westIsland, islandClass);
+rmSetAreaSize(westIsland, rmAreaTilesToFraction(200), rmAreaTilesToFraction(200));
+rmSetAreaSize(westIsland, 0.008, 0.008);
+rmSetAreaLocation(westIsland, 0.13, 0.4);
+rmSetAreaTerrainType(westIsland, islandTerrainType);
+rmSetAreaBaseHeight(westIsland, 2);
+rmSetAreaHeightBlend(westIsland, 1.0);
+rmSetAreaSmoothDistance(westIsland, 3);
+rmSetAreaWarnFailure(westIsland, false);
+rmSetAreaCoherence(westIsland, 0.6);
+rmBuildArea(westIsland);
+
+let eastIsland = rmCreateArea('east island');
+rmAddAreaToClass(eastIsland, islandClass);
+rmSetAreaSize(eastIsland, rmAreaTilesToFraction(200), rmAreaTilesToFraction(200));
+rmSetAreaSize(eastIsland, 0.0078, 0.008);
+rmSetAreaLocation(eastIsland, 0.4, 0.13);
+rmSetAreaTerrainType(eastIsland, islandTerrainType);
+rmSetAreaBaseHeight(eastIsland, 2);
+rmSetAreaHeightBlend(eastIsland, 1.0);
+rmSetAreaSmoothDistance(eastIsland, 3);
+rmSetAreaWarnFailure(eastIsland, false);
+rmSetAreaCoherence(eastIsland, 0.6);
+rmBuildArea(eastIsland);
+
+rmClearClosestPointConstraints();
+let tradeRouteID = rmCreateTradeRoute();
+let socketID = rmCreateObjectDef('sockets to dock Trade Posts');
+rmAddObjectDefItem(socketID, 'SocketTradeRoute', 1, 0.1);
+rmAddObjectDefToClass(socketID, socketClass);
+
 rmSetObjectDefMinDistance(socketID, 0.0);
-rmSetObjectDefMaxDistance(socketID, 6.0);
-rmAddObjectDefConstraint(socketID, shortAvoidCanyons);
-var tradeRouteID = rmCreateTradeRoute();
+rmSetObjectDefMaxDistance(socketID, 2.0);
+
+rmAddTradeRouteWaypoint(tradeRouteID, 0, 0.6);
+rmAddTradeRouteWaypoint(tradeRouteID, 0.21, 0.51);
+rmAddTradeRouteWaypoint(tradeRouteID, 0.51, 0.21);
+rmAddTradeRouteWaypoint(tradeRouteID, 0.6, 0);
+
+rmBuildTradeRoute(tradeRouteID, tradeRouteType);
+
 rmSetObjectDefTradeRouteID(socketID, tradeRouteID);
-rmAddTradeRouteWaypoint(tradeRouteID, 0.7, 0.0);
-rmAddTradeRouteWaypoint(tradeRouteID, 0.65, 0.21);
-rmAddTradeRouteWaypoint(tradeRouteID, 0.6, 0.31);
-rmAddTradeRouteWaypoint(tradeRouteID, 0.36, 0.35);
-rmAddTradeRouteWaypoint(tradeRouteID, 0.3, 0.5); // center
-rmAddTradeRouteWaypoint(tradeRouteID, 0.36, 0.66);
-rmAddTradeRouteWaypoint(tradeRouteID, 0.6, 0.7);
-rmAddTradeRouteWaypoint(tradeRouteID, 0.61, 0.75);
-rmAddTradeRouteWaypoint(tradeRouteID, 0.65, 0.9);
-rmAddTradeRouteWaypoint(tradeRouteID, 0.6, 1.0);
-var placedTradeRouteA = rmBuildTradeRoute(tradeRouteID, 'dirt');
-if (placedTradeRouteA == false)
-    rmEchoError('Failed to place trade route');
-rmPlaceObjectDefAtLoc(socketID, 0, 0.63, 0.21);
-//	rmPlaceObjectDefAtLoc(socketID, 0, 0.60, 0.31);
-rmPlaceObjectDefAtLoc(socketID, 0, 0.36, 0.35);
-rmPlaceObjectDefAtLoc(socketID, 0, 0.3, 0.5);
-rmPlaceObjectDefAtLoc(socketID, 0, 0.36, 0.66);
-//	rmPlaceObjectDefAtLoc(socketID, 0, 0.61, 0.75);
-rmPlaceObjectDefAtLoc(socketID, 0, 0.62, 0.85);
-// Create a center area.
-var centerID = rmCreateArea('center');
-rmSetAreaSize(centerID, 0.05, 0.05);
-rmSetAreaLocation(centerID, 0.5, 0.5);
-rmSetAreaCoherence(centerID, 1.0);
-rmAddAreaToClass(centerID, rmClassID('center'));
-// ****************************** PLACE PLAYERS ******************************
-var teamZeroCount = rmGetNumberPlayersOnTeam(0);
-var teamOneCount = rmGetNumberPlayersOnTeam(1);
-// 2 team and FFA support
-var OneVOnePlacement = rmRandFloat(0, 1);
+
+let socketLoc = rmGetTradeRouteWayPoint(tradeRouteID, 0.1);
+rmAddClosestPointConstraint(avoidIslands);
+rmAddClosestPointConstraint(avoidWater);
+let socketLocactionOnMainContinent = rmFindClosestPointVector(socketLoc, rmXFractionToMeters(1.0));
+rmPlaceObjectDefAtLoc(socketID, 0, rmXMetersToFraction(xsVectorGetX(socketLocactionOnMainContinent)), rmZMetersToFraction(xsVectorGetZ(socketLocactionOnMainContinent)));
+rmClearClosestPointConstraints();
+
+socketLoc = rmGetTradeRouteWayPoint(tradeRouteID, 0.5);
+rmAddClosestPointConstraint(avoidIslands);
+rmAddClosestPointConstraint(avoidWater);
+socketLocactionOnMainContinent = rmFindClosestPointVector(socketLoc, rmXFractionToMeters(1.0));
+rmPlaceObjectDefAtLoc(socketID, 0, rmXMetersToFraction(xsVectorGetX(socketLocactionOnMainContinent)), rmZMetersToFraction(xsVectorGetZ(socketLocactionOnMainContinent)));
+rmClearClosestPointConstraints();
+
+socketLoc = rmGetTradeRouteWayPoint(tradeRouteID, 0.9);
+rmAddClosestPointConstraint(avoidIslands);
+rmAddClosestPointConstraint(avoidWater);
+socketLocactionOnMainContinent = rmFindClosestPointVector(socketLoc, rmXFractionToMeters(1.0));
+rmPlaceObjectDefAtLoc(socketID, 0, rmXMetersToFraction(xsVectorGetX(socketLocactionOnMainContinent)), rmZMetersToFraction(xsVectorGetZ(socketLocactionOnMainContinent)));
+rmClearClosestPointConstraints();
+
+let nativeVillage1 = -1;
+nativeVillage1 = rmCreateGrouping('native village 1', 'native Seminole village 1');
+rmAddGroupingToClass(nativeVillage1, socketClass);
+rmSetGroupingMinDistance(nativeVillage1, 0.0);
+rmSetGroupingMaxDistance(nativeVillage1, 0.0);
+rmAddGroupingToClass(nativeVillage1, rmClassID('importantItem'));
+rmPlaceGroupingAtLoc(nativeVillage1, 0, 0.7, 0.55);
+
+let nativeVillage2 = rmRandInt(1, 5);
+nativeVillage2 = rmCreateGrouping('native village 2', 'native Seminole village 1');
+rmAddGroupingToClass(nativeVillage2, socketClass);
+rmSetGroupingMinDistance(nativeVillage2, 0.0);
+rmSetGroupingMaxDistance(nativeVillage2, 0.0);
+rmAddGroupingToClass(nativeVillage2, rmClassID('importantItem'));
+rmPlaceGroupingAtLoc(nativeVillage2, 0, 0.55, 0.7);
+
 if (cNumberNonGaiaPlayers == 2) {
-    if (OneVOnePlacement < 0.5) {
-        rmSetPlacementTeam(0);
-        rmPlacePlayersLine(0.42, 0.15, 0.46, 0.15, 0, 0.05);
-        rmSetPlacementTeam(1);
-        rmPlacePlayersLine(0.4, 0.87, 0.44, 0.87, 0, 0.05);
+    // 1v1
+    if (rmRandFloat(0, 1) > 0.5) {
+        rmPlacePlayer(1, 0.33, 0.83);
+        rmPlacePlayer(2, 0.83, 0.33);
+    } else {
+        rmPlacePlayer(1, 0.83, 0.33);
+        rmPlacePlayer(2, 0.33, 0.83);
     }
-    else {
-        rmSetPlacementTeam(0);
-        rmPlacePlayersLine(0.4, 0.87, 0.44, 0.87, 0, 0.05);
-        rmSetPlacementTeam(1);
-        rmPlacePlayersLine(0.42, 0.15, 0.46, 0.15, 0, 0.05);
-    }
-}
-else if (cNumberTeams <= 2 && teamZeroCount <= 4 && teamOneCount <= 4) {
+} else {
+    // team
     rmSetPlacementTeam(0);
-    rmSetPlacementSection(0.35, 0.6); // 0.5
-    rmSetTeamSpacingModifier(0.25);
-    rmPlacePlayersCircular(0.38, 0.4, 0);
+    rmSetPlacementSection(0.89, 0.02);
+    rmPlacePlayersCircular(0.35, 0.36, 0);
+
     rmSetPlacementTeam(1);
-    rmSetPlacementSection(0.85, 0.1); // 0.5
-    rmSetTeamSpacingModifier(0.25);
-    rmPlacePlayersCircular(0.38, 0.4, 0);
+    rmSetPlacementSection(0.22, 0.35);
+    rmPlacePlayersCircular(0.35, 0.36, 0);
 }
-else {
-    rmSetTeamSpacingModifier(0.7);
-    rmPlacePlayersCircular(0.42, 0.44, 0.0);
+
+let avoidStartingUnitsSmall = rmCreateClassDistanceConstraint('objects avoid starting units small', startingUnitClass, 7.0);
+
+let startingTCID = rmCreateObjectDef('startingTC');
+if (rmGetNomadStart()) {
+    rmAddObjectDefItem(startingTCID, 'CoveredWagon', 1, 0.0);
+} else {
+    rmAddObjectDefItem(startingTCID, 'TownCenter', 1, 0.0);
 }
-/*
-if ( cNumberTeams == 2 )
-    {
-        rmSetPlacementTeam(0);
-        rmPlacePlayersLine(0.60, 0.10, 0.65, 0.1, 0, 0.002);
-    
-        rmSetPlacementTeam(1);
-        rmPlacePlayersLine(0.50, 0.9, 0.55, 0.9, 0, 0.002);
-    }
-    else
-    {
-        rmSetPlacementSection(0.0, 0.95);
-        rmPlacePlayersCircular(0.35, 0.40, 0.0);
-    }
-*/
-// Set up player areas.
-var playerFraction = rmAreaTilesToFraction(100);
-for (i = 1; i < cNumberPlayers;) {
-    // Create the area.
-    var id = rmCreateArea('Player' + i);
-    // Assign to the player.
-    rmSetPlayerArea(i, id);
-    // Set the size.
-    rmSetAreaSize(id, playerFraction, playerFraction);
-    rmAddAreaToClass(id, classPlayer);
-    rmSetAreaMinBlobs(id, 1);
-    rmSetAreaMaxBlobs(id, 1);
-    //      rmAddAreaConstraint(id, playerConstraint);
-    //      rmAddAreaConstraint(id, playerEdgeConstraint);
-    rmSetAreaLocPlayer(id, i);
-    rmSetAreaTerrainType(id, TERRAINS.AMAZON_GROUND1_AMA);
-    rmSetAreaWarnFailure(id, false);
-}
-// Build the areas.
-rmBuildAllAreas();
-// Text
-rmSetStatusText('', 0.8);
-// ******************************* UBER MINE AT CENTER **************************************
-var centerType = rmRandFloat(0.0, 1.0);
-// check for KOTH game mode
-if (rmGetIsKOTH()) {
-    var randLoc = rmRandInt(1, 3);
-    var xLoc = 0.5;
-    var yLoc = 0.5;
-    var walk = 0.05;
-    ypKingsHillPlacer(xLoc, yLoc, walk, shortAvoidCanyons);
-    rmEchoInfo('XLOC = ' + xLoc);
-    rmEchoInfo('XLOC = ' + yLoc);
-}
-else if (centerType <= 0.5) {
-    var uberMineType = rmRandInt(1, 3);
-    var uberMineID = -1;
-    uberMineID = rmCreateGrouping('ubermine', 'sonoramegamine_0' + uberMineType);
-    rmSetGroupingMinDistance(uberMineID, 0.0);
-    rmSetGroupingMaxDistance(uberMineID, 0.0);
-    rmAddGroupingToClass(uberMineID, rmClassID('canyon'));
-    rmPlaceGroupingAtLoc(uberMineID, 0, 0.55, 0.5);
-}
-else if (centerType <= 0.8) {
-    if (subCiv2 == rmGetCivID('Apache')) {
-        // RANDOM CENTER NATIVES
-        var apacheVillage2ID = -1;
-        var apacheVillage2Type = rmRandInt(1, 3); //rmRandInt(1,9);
-        apacheVillage2ID = rmCreateGrouping('apache village2', 'native apache village ' + apacheVillage2Type);
-        rmSetGroupingMinDistance(apacheVillage2ID, 0.0);
-        rmSetGroupingMaxDistance(apacheVillage2ID, 0.0);
-        rmAddGroupingToClass(apacheVillage2ID, rmClassID('natives'));
-        rmAddGroupingToClass(apacheVillage2ID, rmClassID('canyon'));
-        rmAddGroupingToClass(apacheVillage2ID, rmClassID('importantItem'));
-        rmPlaceGroupingAtLoc(apacheVillage2ID, 0, 0.55, 0.55);
-    }
-    else {
-        var navajoVillage2ID = -1;
-        var navajoVillage2Type = rmRandInt(1, 3); //rmRandInt(1,9);
-        navajoVillage2ID = rmCreateGrouping('navajo village 2', 'native navajo village ' + navajoVillage2Type);
-        rmSetGroupingMinDistance(navajoVillage2ID, 0.0);
-        rmSetGroupingMaxDistance(navajoVillage2ID, 0.0);
-        rmAddGroupingToClass(navajoVillage2ID, rmClassID('natives'));
-        rmAddGroupingToClass(navajoVillage2ID, rmClassID('canyon'));
-        rmAddGroupingToClass(navajoVillage2ID, rmClassID('importantItem'));
-        rmPlaceGroupingAtLoc(navajoVillage2ID, 0, 0.55, 0.55);
-    }
-}
-//    *********************************** PLACE NATIVES ***********************************
-var randomPlacement = -1;
-if (subCiv0 == rmGetCivID('maya')) {
-    var mayaVillageID = -1;
-    var mayaVillageType = rmRandInt(1, 5);
-    randomPlacement = rmRandInt(1, 10);
-    mayaVillageID = rmCreateGrouping('maya village', 'native maya village ' + mayaVillageType);
-    rmSetGroupingMinDistance(mayaVillageID, 0.0);
-    rmSetGroupingMaxDistance(mayaVillageID, 20.0);
-    rmAddGroupingConstraint(mayaVillageID, avoidImpassableLand);
-    rmAddGroupingToClass(mayaVillageID, rmClassID('natives'));
-    rmAddGroupingToClass(mayaVillageID, rmClassID('importantItem'));
-    if (randomPlacement <= 5)
-        rmPlaceGroupingAtLoc(mayaVillageID, 0, 0.82, 0.5);
-    else
-        rmPlaceGroupingAtLoc(mayaVillageID, 0, 0.82, 0.5);
-}
-else {
-    var navajoVillageID = -1;
-    var navajoVillageType = rmRandInt(1, 5);
-    randomPlacement = rmRandInt(1, 10);
-    navajoVillageID = rmCreateGrouping('navajo village', 'native navajo village ' + navajoVillageType);
-    rmSetGroupingMinDistance(navajoVillageID, 0.0);
-    rmSetGroupingMaxDistance(navajoVillageID, 20.0);
-    rmAddGroupingConstraint(navajoVillageID, avoidImpassableLand);
-    rmAddGroupingToClass(navajoVillageID, rmClassID('natives'));
-    rmAddGroupingToClass(navajoVillageID, rmClassID('importantItem'));
-    if (randomPlacement <= 5)
-        rmPlaceGroupingAtLoc(navajoVillageID, 0, 0.82, 0.5);
-    else
-        rmPlaceGroupingAtLoc(navajoVillageID, 0, 0.82, 0.5);
-}
-if (subCiv1 == rmGetCivID('apache')) {
-    var apacheVillageID = -1;
-    var apacheVillageType = rmRandInt(1, 5);
-    apacheVillageID = rmCreateGrouping('apache village', 'native apache village ' + apacheVillageType);
-    rmSetGroupingMinDistance(apacheVillageID, 0.0);
-    rmSetGroupingMaxDistance(apacheVillageID, 20.0);
-    rmAddGroupingConstraint(apacheVillageID, avoidImpassableLand);
-    rmAddGroupingToClass(apacheVillageID, rmClassID('natives'));
-    rmPlaceGroupingAtLoc(apacheVillageID, 0, 0.18, 0.5);
-}
-else {
-    var navajoVillage3ID = -1;
-    var navajoVillage3Type = rmRandInt(1, 5);
-    navajoVillage3ID = rmCreateGrouping('navajo village 3', 'native navajo village ' + navajoVillageType);
-    rmSetGroupingMinDistance(navajoVillage3ID, 0.0);
-    rmSetGroupingMaxDistance(navajoVillage3ID, 20.0);
-    rmAddGroupingConstraint(navajoVillage3ID, avoidImpassableLand);
-    rmAddGroupingToClass(navajoVillage3ID, rmClassID('natives'));
-    rmPlaceGroupingAtLoc(navajoVillage3ID, 0, 0.18, 0.5);
-}
-//**************************************** cliff embellishments *********************************************
-for (i = 0; i < numTries;) {
-    var cliffHeight = rmRandInt(0, 10);
-    var mesaID = rmCreateArea('mesa' + i);
-    rmSetAreaSize(mesaID, rmAreaTilesToFraction(2), rmAreaTilesToFraction(200)); // used to be 300
-    rmSetAreaWarnFailure(mesaID, false);
-    rmSetAreaCliffType(mesaID, 'Sonora');
-    rmAddAreaToClass(mesaID, rmClassID('canyon')); // Attempt to keep cliffs away from each other.
-    rmSetAreaCliffEdge(mesaID, 1, 1.0, 0.1, 1.0, 0);
-    if (cliffHeight <= 5)
-        rmSetAreaCliffHeight(mesaID, rmRandInt(4, 10), 1.0, 1.0);
-    else
-        rmSetAreaCliffHeight(mesaID, -15, 1.0, 1.0);
-    rmAddAreaConstraint(mesaID, avoidCanyons);
-    rmAddAreaConstraint(mesaID, avoidNatives);
-    rmSetAreaMinBlobs(mesaID, 3);
-    rmSetAreaMaxBlobs(mesaID, 5);
-    rmSetAreaMinBlobDistance(mesaID, 3.0);
-    rmSetAreaMaxBlobDistance(mesaID, 5.0);
-    rmSetAreaCoherence(mesaID, 0.5);
-    rmAddAreaConstraint(mesaID, playerConstraint);
-    rmAddAreaConstraint(mesaID, avoidTradeRouteSockets);
-    rmAddAreaConstraint(mesaID, avoidTradeRoute);
-    rmAddAreaConstraint(mesaID, shortAvoidSilver);
-    rmAddAreaConstraint(mesaID, avoidHill);
-    if (rmBuildArea(mesaID) == false) {
-        // Stop trying once we fail 3 times in a row.
-        failCount++;
-        if (failCount == 2)
-            break;
-    }
-    else
-        failCount = 0;
-}
-// small cliffs
-for (i = 0; i < numTries;) {
-    var smallCliffHeight = rmRandInt(0, 10);
-    var smallMesaID = rmCreateArea('small mesa' + i);
-    rmSetAreaSize(smallMesaID, rmAreaTilesToFraction(4), rmAreaTilesToFraction(8)); // used to be 300
-    rmSetAreaWarnFailure(smallMesaID, false);
-    rmSetAreaCliffType(smallMesaID, 'Sonora');
-    rmAddAreaToClass(smallMesaID, rmClassID('canyon')); // Attempt to keep cliffs away from each other.
-    rmSetAreaCliffEdge(smallMesaID, 1, 1.0, 0.1, 1.0, 0);
-    rmSetAreaCliffHeight(smallMesaID, rmRandInt(6, 8), 1.0, 1.0);
-    rmAddAreaConstraint(smallMesaID, shortAvoidCanyons);
-    rmSetAreaMinBlobs(smallMesaID, 3);
-    rmSetAreaMaxBlobs(smallMesaID, 5);
-    rmSetAreaMinBlobDistance(smallMesaID, 3.0);
-    rmSetAreaMaxBlobDistance(smallMesaID, 5.0);
-    rmSetAreaCoherence(smallMesaID, 0.3);
-    rmAddAreaConstraint(smallMesaID, mediumPlayerConstraint);
-    rmAddAreaConstraint(smallMesaID, avoidNatives);
-    rmAddAreaConstraint(smallMesaID, avoidTradeRouteSockets);
-    rmAddAreaConstraint(smallMesaID, avoidTradeRoute);
-    rmAddAreaConstraint(smallMesaID, shortAvoidSilver);
-    rmAddAreaConstraint(smallMesaID, avoidHill);
-    if (rmBuildArea(smallMesaID) == false) {
-        // Stop trying once we fail 3 times in a row.
-        failCount++;
-        if (failCount == 20)
-            break;
-    }
-    else
-        failCount = 0;
-}
-for (i = 1; i < cNumberPlayers;) {
-    // Test of Marcin's Starting Units stuff...
-    rmPlaceObjectDefAtLoc(TCID, i, rmPlayerLocXFraction(i), rmPlayerLocZFraction(i));
+rmAddObjectDefToClass(startingTCID, startingUnitClass);
+rmAddObjectDefToClass(startingTCID, townCenterClass);
+rmSetObjectDefMinDistance(startingTCID, 0.0);
+rmSetObjectDefMaxDistance(startingTCID, 1.0);
+
+let startingUnits = rmCreateStartingUnitsObjectDef(5.0);
+rmSetObjectDefMinDistance(startingUnits, 5.0);
+rmSetObjectDefMaxDistance(startingUnits, 10.0);
+rmAddObjectDefToClass(startingUnits, startingUnitClass);
+rmAddObjectDefConstraint(startingUnits, avoidStartingUnitsSmall);
+
+let startAreaTreeID = rmCreateObjectDef('starting trees');
+rmAddObjectDefItem(startAreaTreeID, treeType, 3, 2.0);
+rmSetObjectDefMinDistance(startAreaTreeID, 10.0);
+rmSetObjectDefMaxDistance(startAreaTreeID, 15.0);
+rmAddObjectDefToClass(startAreaTreeID, startingUnitClass);
+rmAddObjectDefConstraint(startAreaTreeID, avoidStartingUnitsSmall);
+
+let startHuntID = rmCreateObjectDef('starting rhea');
+rmAddObjectDefItem(startHuntID, hunt1Type, 5, 7.0);
+rmSetObjectDefMinDistance(startHuntID, 11.0);
+rmSetObjectDefMaxDistance(startHuntID, 14.0);
+rmAddObjectDefToClass(startHuntID, startingUnitClass);
+rmAddObjectDefConstraint(startHuntID, avoidStartingUnitsSmall);
+rmSetObjectDefCreateHerd(startHuntID, false);
+
+let startMineID = rmCreateObjectDef('starting gold');
+rmAddObjectDefItem(startMineID, mineType, 1, 0.0);
+rmSetObjectDefMinDistance(startMineID, 12.0);
+rmSetObjectDefMaxDistance(startMineID, 16.0);
+rmAddObjectDefToClass(startMineID, startingUnitClass);
+rmAddObjectDefConstraint(startHuntID, avoidStartingUnitsSmall);
+
+let playerNuggetID = rmCreateObjectDef('player nugget');
+rmAddObjectDefItem(playerNuggetID, 'nugget', 1, 0.0);
+rmAddObjectDefToClass(playerNuggetID, startingUnitClass);
+rmAddObjectDefToClass(playerNuggetID, nuggetClass);
+rmSetObjectDefMinDistance(playerNuggetID, 30.0);
+rmSetObjectDefMaxDistance(playerNuggetID, 35.0);
+rmAddObjectDefConstraint(playerNuggetID, avoidStartingUnitsSmall);
+rmAddObjectDefConstraint(playerNuggetID, circleConstraint);
+rmAddObjectDefConstraint(playerNuggetID, avoidNugget);
+
+// flag constraints
+let flagVsFlag = rmCreateTypeDistanceConstraint('flag avoid same', 'HomeCityWaterSpawnFlag', 5.0);
+let stayInSouthWater = rmCreateAreaConstraint('stay in water ', southWater);
+let avoidEdge = rmCreatePieConstraint('Avoid edge', 0.5, 0.5, rmXFractionToMeters(0.0), rmXFractionToMeters(0.49), rmDegreesToRadians(0), rmDegreesToRadians(360));
+
+// Water spawn flag
+let colonyShipID = 0;
+colonyShipID = rmCreateObjectDef('colony ship ');
+rmAddObjectDefItem(colonyShipID, 'HomeCityWaterSpawnFlag', 1, 1.0);
+rmSetObjectDefMinDistance(colonyShipID, 0);
+rmSetObjectDefMaxDistance(colonyShipID, 10);
+rmAddObjectDefConstraint(colonyShipID, flagVsFlag);
+rmAddObjectDefConstraint(colonyShipID, stayInSouthWater);
+
+for (i = 1; i < cNumberPlayers; i++) {
+    rmClearClosestPointConstraints();
+    // Place starting units and a TC!
+    rmPlaceObjectDefAtLoc(startingTCID, i, rmPlayerLocXFraction(i), rmPlayerLocZFraction(i));
+    let TCLocation = rmGetUnitPosition(rmGetUnitPlacedOfPlayer(startingTCID, i));
     rmPlaceObjectDefAtLoc(startingUnits, i, rmPlayerLocXFraction(i), rmPlayerLocZFraction(i));
-    rmPlaceObjectDefAtLoc(playerSilverID, 0, rmPlayerLocXFraction(i), rmPlayerLocZFraction(i));
-    rmPlaceObjectDefAtLoc(StartTurkeyID, 0, rmPlayerLocXFraction(i), rmPlayerLocZFraction(i));
-    rmPlaceObjectDefAtLoc(StartAreaTreeID, 0, rmPlayerLocXFraction(i), rmPlayerLocZFraction(i));
-    var TCLocation = rmGetUnitPosition(rmGetUnitPlacedOfPlayer(TCID, i));
-    if (ypIsAsian(i) && rmGetNomadStart() == false)
-        rmPlaceObjectDefAtLoc(ypMonasteryBuilder(i), i, rmXMetersToFraction(xsVectorGetX(TCLocation)), rmZMetersToFraction(xsVectorGetZ(TCLocation)));
-    //var closestPoint=rmGetUnitPosition(rmGetUnitPlacedOfPlayer(startingUnits, i));
-    //rmSetHomeCityGatherPoint(i, closestPoint);
+    rmPlaceObjectDefAtLoc(startAreaTreeID, i, rmPlayerLocXFraction(i), rmPlayerLocZFraction(i));
+    rmPlaceObjectDefAtLoc(startAreaTreeID, i, rmPlayerLocXFraction(i), rmPlayerLocZFraction(i));
+    rmPlaceObjectDefAtLoc(startAreaTreeID, i, rmPlayerLocXFraction(i), rmPlayerLocZFraction(i));
+    rmPlaceObjectDefAtLoc(startHuntID, i, rmPlayerLocXFraction(i), rmPlayerLocZFraction(i));
+    rmPlaceObjectDefAtLoc(startMineID, i, rmPlayerLocXFraction(i), rmPlayerLocZFraction(i));
+    rmPlaceObjectDefAtLoc(playerNuggetID, i, rmPlayerLocXFraction(i), rmPlayerLocZFraction(i));
+
+    rmSetNuggetDifficulty(1, 1);
+    rmPlaceObjectDefAtLoc(playerNuggetID, i, rmPlayerLocXFraction(i), rmPlayerLocZFraction(i));
+
+    rmAddClosestPointConstraint(stayInSouthWater);
+    rmAddClosestPointConstraint(flagVsFlag);
+    rmAddClosestPointConstraint(avoidEdge);
+    let closestPoint = rmFindClosestPointVector(TCLocation, rmXFractionToMeters(2.0));
+    rmPlaceObjectDefAtLoc(colonyShipID, i, rmXMetersToFraction(xsVectorGetX(closestPoint)), rmZMetersToFraction(xsVectorGetZ(closestPoint)));
+
+    rmClearClosestPointConstraints();
 }
-// ************************************ FORESTS **************************************
-for (i = 0; i < cNumberNonGaiaPlayers * 15;) {
-    var edgeForestID = rmCreateArea('edgeForest' + i);
-    rmSetAreaWarnFailure(edgeForestID, false);
-    rmSetAreaSize(edgeForestID, rmAreaTilesToFraction(200), rmAreaTilesToFraction(300));
-    rmSetAreaForestType(edgeForestID, 'sonora forest');
-    rmSetAreaForestDensity(edgeForestID, 1.0);
-    rmSetAreaForestClumpiness(edgeForestID, 1.0);
-    rmSetAreaForestUnderbrush(edgeForestID, 0.0);
-    rmAddAreaToClass(edgeForestID, rmClassID('classForest'));
-    rmSetAreaMinBlobs(edgeForestID, 1);
-    rmSetAreaMaxBlobs(edgeForestID, 3);
-    rmSetAreaMinBlobDistance(edgeForestID, 16.0);
-    rmSetAreaMaxBlobDistance(edgeForestID, 30.0);
-    rmSetAreaCoherence(edgeForestID, 0.6);
-    rmSetAreaSmoothDistance(edgeForestID, 10);
-    rmAddAreaConstraint(edgeForestID, shortPlayerConstraint);
-    rmAddAreaConstraint(edgeForestID, forestConstraint);
-    rmAddAreaConstraint(edgeForestID, shortAvoidSilver);
-    rmAddAreaConstraint(edgeForestID, canyonConstraint);
-    rmAddAreaConstraint(edgeForestID, avoidTradeRoute);
-    rmAddAreaConstraint(edgeForestID, avoidTradeRouteSockets);
-    rmAddAreaConstraint(edgeForestID, avoidStartingUnits);
-    rmAddAreaConstraint(edgeForestID, avoidNatives);
-    rmAddAreaConstraint(edgeForestID, avoidHill);
-    if (rmBuildArea(edgeForestID) == false) {
-        // Stop trying once we fail 5 times in a row.
-        failCount++;
-        if (failCount == 5)
-            break;
+
+let avoidCoin = rmCreateTypeDistanceConstraint('avoid coin', mineType, 60.0);
+let avoidCoinSmall = rmCreateTypeDistanceConstraint('avoid coin small', mineType, 12.0);
+
+let numberOfHunts = cNumberNonGaiaPlayers;
+let numberOfItemPlaced = 0;
+let itemPositionX = -1;
+let itemPositionZ = -1;
+let result = 0;
+let leaveWhile = 0;
+
+let numberOfMines = (cNumberNonGaiaPlayers / 2) * 3;
+
+let minePlacement = 0;
+let minePositionX = -1;
+let minePositionZ = -1;
+result = 0;
+leaveWhile = 0;
+
+let mineID = rmCreateObjectDef('mine item');
+rmAddObjectDefItem(mineID, mineType, 1, 0.0);
+rmSetObjectDefMinDistance(mineID, 0.0);
+rmSetObjectDefMaxDistance(mineID, 0.0);
+rmAddObjectDefConstraint(mineID, avoidTownCenterSmall);
+rmAddObjectDefConstraint(mineID, avoidCoin);
+rmAddObjectDefConstraint(mineID, avoidIslands);
+rmAddObjectDefConstraint(mineID, circleConstraint);
+rmAddObjectDefConstraint(mineID, avoidSocket);
+rmAddObjectDefConstraint(mineID, avoidWater);
+rmAddObjectDefConstraint(mineID, avoidCliffs);
+
+let mineSymetryID = -1;
+mineSymetryID = rmCreateObjectDef('mine item symetry');
+rmAddObjectDefItem(mineSymetryID, mineType, 1, 0.0);
+rmSetObjectDefMinDistance(mineSymetryID, 0.0);
+rmSetObjectDefMaxDistance(mineSymetryID, 0.0);
+
+while (minePlacement < numberOfMines) {
+    minePositionX = rmRandFloat(0.0, 1.0);
+    minePositionZ = rmRandFloat(0, minePositionX - 0.05); // vertical symetry with gap in the axis
+    rmSetObjectDefForceFullRotation(mineID, true);
+    result = rmPlaceObjectDefAtLoc(mineID, 0, minePositionX, minePositionZ);
+    if (result == 1) {
+        rmSetObjectDefForceFullRotation(mineSymetryID, true);
+        rmPlaceObjectDefAtLoc(mineSymetryID, 0, minePositionZ, minePositionX);
+        minePlacement++;
+        leaveWhile = 0;
+    } else {
+        leaveWhile++;
     }
-    else
-        failCount = 0;
+    if (leaveWhile == 100) break;
 }
-// COIN RESOURCES
-var silverType = rmRandInt(1, 10);
-var silverID = -1;
-var silverCount = cNumberNonGaiaPlayers * 3;
-rmEchoInfo('silver count = ' + silverCount);
-for (i = 0; i < silverCount;) {
-    silverID = rmCreateObjectDef('silver' + i);
-    rmAddObjectDefItem(silverID, 'mine', 1, 0);
-    rmSetObjectDefMinDistance(silverID, 0.0);
-    rmSetObjectDefMaxDistance(silverID, rmXFractionToMeters(0.45));
-    rmAddObjectDefConstraint(silverID, avoidImpassableLand);
-    rmAddObjectDefConstraint(silverID, canyonConstraint);
-    rmAddObjectDefConstraint(silverID, avoidSilver);
-    rmAddObjectDefConstraint(silverID, mediumPlayerConstraint);
-    rmAddObjectDefConstraint(silverID, shortForestConstraint);
-    rmAddObjectDefConstraint(silverID, avoidNatives);
-    rmAddObjectDefConstraint(silverID, avoidTradeRouteSockets);
-    rmPlaceObjectDefAtLoc(silverID, 0, 0.5, 0.5);
+
+result = 0;
+leaveWhile = 0;
+
+let hunt2Size = rmRandInt(2, 3);
+let hunt2ID = rmCreateObjectDef('hunt2 herd');
+rmAddObjectDefToClass(hunt2ID, huntClass);
+rmAddObjectDefItem(hunt2ID, hunt2Type, hunt2Size, 8.0);
+rmSetObjectDefMinDistance(hunt2ID, 0.0);
+rmSetObjectDefMaxDistance(hunt2ID, rmXFractionToMeters(0.0));
+rmAddObjectDefConstraint(hunt2ID, avoidHunt);
+rmAddObjectDefConstraint(hunt2ID, avoidTownCenterSmall);
+rmAddObjectDefConstraint(hunt2ID, avoidAll);
+rmAddObjectDefConstraint(hunt2ID, avoidIslands);
+rmAddObjectDefConstraint(hunt2ID, avoidWater);
+rmAddObjectDefConstraint(hunt2ID, circleConstraint);
+rmAddObjectDefConstraint(hunt2ID, avoidCliffs);
+rmSetObjectDefCreateHerd(hunt2ID, true);
+
+let hunt2SymetryID = rmCreateObjectDef('hunt2 herd symetry');
+rmAddObjectDefToClass(hunt2SymetryID, huntClass);
+rmAddObjectDefItem(hunt2SymetryID, hunt2Type, hunt2Size, 8.0);
+rmSetObjectDefMinDistance(hunt2SymetryID, 0.0);
+rmSetObjectDefMaxDistance(hunt2SymetryID, 0.0);
+rmSetObjectDefCreateHerd(hunt2SymetryID, true);
+
+while (numberOfItemPlaced < numberOfHunts) {
+    itemPositionX = rmRandFloat(0.0, 1.0);
+    itemPositionZ = rmRandFloat(0, itemPositionX - 0.05); // vertical symetry with gap in the axis
+    result = rmPlaceObjectDefAtLoc(hunt2ID, 0, itemPositionX, itemPositionZ, 1);
+    if (result != 0) {
+        rmPlaceObjectDefAtLoc(hunt2SymetryID, 0, itemPositionZ, itemPositionX, 1);
+        numberOfItemPlaced++;
+        leaveWhile = 0;
+    } else {
+        leaveWhile++;
+    }
+    if (leaveWhile == 60) break;
 }
-for (i = 0; i < 10 * cNumberNonGaiaPlayers;) {
-    var randomTreeID = rmCreateObjectDef('random tree ' + i);
-    rmAddObjectDefItem(randomTreeID, 'TreeSonora', rmRandInt(1, 4), 3.0);
-    rmSetObjectDefMinDistance(randomTreeID, 0.0);
-    rmSetObjectDefMaxDistance(randomTreeID, rmXFractionToMeters(0.3));
-    rmAddObjectDefConstraint(randomTreeID, avoidResource);
-    rmAddObjectDefConstraint(randomTreeID, shortAvoidImpassableLand);
-    rmAddObjectDefConstraint(randomTreeID, avoidTradeRouteSockets);
-    rmAddObjectDefConstraint(randomTreeID, shortPlayerConstraint);
-    rmAddObjectDefConstraint(randomTreeID, avoidStartingUnits);
-    rmAddObjectDefConstraint(randomTreeID, avoidHill);
-    rmPlaceObjectDefAtLoc(randomTreeID, 0, 0.5, 0.5);
+
+result = 0;
+leaveWhile = 0;
+
+numberOfHunts = cNumberNonGaiaPlayers * 3;
+let hunt1Size = rmRandInt(8, 9);
+let hunt1ID = rmCreateObjectDef('hunt1 herd');
+rmAddObjectDefToClass(hunt1ID, huntClass);
+rmAddObjectDefItem(hunt1ID, hunt1Type, hunt1Size, 8.0);
+rmSetObjectDefMinDistance(hunt1ID, 0.0);
+rmSetObjectDefMaxDistance(hunt1ID, rmXFractionToMeters(0.0));
+rmAddObjectDefConstraint(hunt1ID, avoidHunt);
+rmAddObjectDefConstraint(hunt1ID, avoidTownCenterSmall);
+rmAddObjectDefConstraint(hunt1ID, avoidAll);
+rmAddObjectDefConstraint(hunt1ID, avoidIslands);
+rmAddObjectDefConstraint(hunt1ID, circleConstraint);
+rmAddObjectDefConstraint(hunt1ID, avoidWater);
+rmAddObjectDefConstraint(hunt1ID, avoidCliffs);
+
+rmSetObjectDefCreateHerd(hunt1ID, true);
+
+let hunt1SymetryID = rmCreateObjectDef('hunt1 herd symetry');
+rmAddObjectDefToClass(hunt1SymetryID, huntClass);
+rmAddObjectDefItem(hunt1SymetryID, hunt1Type, hunt1Size, 7.0);
+rmSetObjectDefMinDistance(hunt1SymetryID, 0.0);
+rmSetObjectDefMaxDistance(hunt1SymetryID, 0.0);
+rmSetObjectDefCreateHerd(hunt1SymetryID, true);
+
+while (numberOfItemPlaced < numberOfHunts) {
+    itemPositionX = rmRandFloat(0.0, 1.0);
+    itemPositionZ = rmRandFloat(0, itemPositionX - 0.05); // vertical symetry with gap in the axis
+    result = rmPlaceObjectDefAtLoc(hunt1ID, 0, itemPositionX, itemPositionZ, 1);
+    if (result != 0) {
+        rmPlaceObjectDefAtLoc(hunt1SymetryID, 0, itemPositionZ, itemPositionX, 1);
+        numberOfItemPlaced++;
+        leaveWhile = 0;
+    } else {
+        leaveWhile++;
+    }
+    if (leaveWhile == 60) break;
 }
-// ************************************ TREASURES ***********************************
-var nugget1 = rmCreateObjectDef('nugget easy');
-rmAddObjectDefItem(nugget1, 'Nugget', 1, 0.0);
-rmSetNuggetDifficulty(1, 1);
-rmAddObjectDefToClass(nugget1, rmClassID('classNugget'));
-rmAddObjectDefConstraint(nugget1, avoidResource);
-rmAddObjectDefConstraint(nugget1, shortAvoidImpassableLand);
-rmAddObjectDefConstraint(nugget1, avoidTradeRouteSockets);
-rmAddObjectDefConstraint(nugget1, avoidTradeRoute);
-rmAddObjectDefConstraint(nugget1, mediumPlayerConstraint);
-rmAddObjectDefConstraint(nugget1, avoidStartingUnits);
-rmAddObjectDefConstraint(nugget1, shortAvoidCanyons);
-rmAddObjectDefConstraint(nugget1, avoidNugget);
-rmAddObjectDefConstraint(nugget1, avoidNatives);
-rmAddObjectDefConstraint(nugget1, circleConstraint);
-rmSetObjectDefMinDistance(nugget1, 40.0);
-rmSetObjectDefMaxDistance(nugget1, 60.0);
-rmPlaceObjectDefPerPlayer(nugget1, false, 2);
-var nugget2 = rmCreateObjectDef('nugget medium');
-rmAddObjectDefItem(nugget2, 'Nugget', 1, 0.0);
-rmSetNuggetDifficulty(2, 2);
-rmAddObjectDefToClass(nugget2, rmClassID('classNugget'));
-rmSetObjectDefMinDistance(nugget2, 0.0);
-rmSetObjectDefMaxDistance(nugget2, rmXFractionToMeters(0.5));
-rmAddObjectDefConstraint(nugget2, avoidResource);
-rmAddObjectDefConstraint(nugget2, shortAvoidImpassableLand);
-rmAddObjectDefConstraint(nugget2, avoidTradeRouteSockets);
-rmAddObjectDefConstraint(nugget2, avoidTradeRoute);
-rmAddObjectDefConstraint(nugget2, mediumPlayerConstraint);
-rmAddObjectDefConstraint(nugget2, shortAvoidCanyons);
-rmAddObjectDefConstraint(nugget2, avoidStartingUnits);
-rmAddObjectDefConstraint(nugget2, avoidNugget);
-rmAddObjectDefConstraint(nugget2, avoidNatives);
-rmAddObjectDefConstraint(nugget2, circleConstraint);
-rmSetObjectDefMinDistance(nugget2, 80.0);
-rmSetObjectDefMaxDistance(nugget2, 120.0);
-rmPlaceObjectDefPerPlayer(nugget2, false, 1);
-var nugget3 = rmCreateObjectDef('nugget hard');
-rmAddObjectDefItem(nugget3, 'Nugget', 1, 0.0);
-rmSetNuggetDifficulty(3, 3);
-rmAddObjectDefToClass(nugget3, rmClassID('classNugget'));
-rmSetObjectDefMinDistance(nugget3, 0.0);
-rmSetObjectDefMaxDistance(nugget3, rmXFractionToMeters(0.4));
-rmAddObjectDefConstraint(nugget3, avoidResource);
-rmAddObjectDefConstraint(nugget3, shortAvoidImpassableLand);
-rmAddObjectDefConstraint(nugget3, avoidTradeRouteSockets);
-rmAddObjectDefConstraint(nugget3, avoidTradeRoute);
-rmAddObjectDefConstraint(nugget3, mediumPlayerConstraint);
-rmAddObjectDefConstraint(nugget3, shortAvoidCanyons);
-rmAddObjectDefConstraint(nugget3, avoidStartingUnits);
-rmAddObjectDefConstraint(nugget3, avoidNugget);
-rmAddObjectDefConstraint(nugget3, avoidNatives);
-rmAddObjectDefConstraint(nugget3, circleConstraint);
-rmPlaceObjectDefAtLoc(nugget3, 0, 0.5, 0.5, cNumberNonGaiaPlayers);
-var nugget4 = rmCreateObjectDef('nugget nuts');
-rmAddObjectDefItem(nugget4, 'Nugget', 1, 0.0);
+
+let avoidForest = rmCreateClassDistanceConstraint('object vs. forest', forestClass, 20.0);
+
+// FORESTS
+let numTries = 20 * cNumberNonGaiaPlayers;
+let failCount = 0;
+for (i = 0; i < numTries; i++) {
+    let forest = rmCreateArea('forest ' + i);
+    rmSetAreaWarnFailure(forest, false);
+    rmSetAreaSize(forest, rmAreaTilesToFraction(100), rmAreaTilesToFraction(150));
+    rmSetAreaForestType(forest, forestType);
+    rmSetAreaForestDensity(forest, 0.8);
+    rmSetAreaForestClumpiness(forest, 0.6);
+    rmSetAreaForestUnderbrush(forest, 0.0);
+    rmSetAreaMinBlobs(forest, 1);
+    rmSetAreaMaxBlobs(forest, 5);
+    rmSetAreaMinBlobDistance(forest, 16.0);
+    rmSetAreaMaxBlobDistance(forest, 70.0);
+    rmSetAreaCoherence(forest, 0.4);
+    rmSetAreaSmoothDistance(forest, 0);
+    rmAddAreaToClass(forest, forestClass);
+    rmAddAreaConstraint(forest, avoidAll);
+    rmAddAreaConstraint(forest, avoidWater);
+    rmAddAreaConstraint(forest, avoidCliffs);
+    rmAddAreaConstraint(forest, avoidSocket);
+    rmAddAreaConstraint(forest, avoidForest);
+    rmAddAreaConstraint(forest, avoidTownCenterSmall);
+    rmAddAreaConstraint(forest, avoidHuntSmall);
+    rmAddAreaConstraint(forest, avoidCoinSmall);
+
+    if (rmBuildArea(forest) == false) {
+        // Stop trying once we fail 3 times in a row.
+        failCount++;
+        if (failCount == 5) break;
+    } else failCount = 0;
+}
+
+for (i = 0; i < 6 + 6 * cNumberNonGaiaPlayers; i++) {
+    let fishID = rmCreateObjectDef('fish' + i);
+    rmAddObjectDefItem(fishID, fishType, 1, 1.0);
+    rmAddObjectDefToClass(fishID, fishClass);
+    rmSetObjectDefMinDistance(fishID, 0.0);
+    rmSetObjectDefMaxDistance(fishID, rmXFractionToMeters(0.5));
+    rmAddObjectDefConstraint(fishID, avoidFish);
+    rmAddObjectDefConstraint(fishID, avoidTradeRoute);
+    rmPlaceObjectDefInArea(fishID, 0, southWater, 1);
+}
+
+let treeIsland = rmCreateObjectDef('tree island');
+rmAddObjectDefItem(treeIsland, treeType, 1, 3.0);
+rmSetObjectDefMinDistance(treeIsland, 0.0);
+rmSetObjectDefMaxDistance(treeIsland, 0.0);
+rmPlaceObjectDefInArea(treeIsland, 0, eastIsland, (4 * cNumberNonGaiaPlayers) / 2);
+rmPlaceObjectDefInArea(treeIsland, 0, westIsland, (4 * cNumberNonGaiaPlayers) / 2);
+
+let mineIsland = rmCreateObjectDef('mine in island');
+rmAddObjectDefItem(mineIsland, mineType, 1, 0.0);
+rmSetObjectDefMinDistance(mineIsland, 0.0);
+rmSetObjectDefMaxDistance(mineIsland, 0.0);
+rmPlaceObjectDefInArea(mineIsland, 0, eastIsland, 1);
+rmPlaceObjectDefInArea(mineIsland, 0, westIsland, 1);
+
+let fishID = rmCreateObjectDef('fish' + i);
+rmAddObjectDefItem(fishID, fishType, 1, 1.0);
+rmAddObjectDefToClass(fishID, fishClass);
+rmSetObjectDefMinDistance(fishID, 0.0);
+rmSetObjectDefMaxDistance(fishID, rmXFractionToMeters(0.5));
+rmAddObjectDefConstraint(fishID, avoidFish);
+rmAddObjectDefConstraint(fishID, avoidTradeRoute);
+rmPlaceObjectDefInArea(fishID, 0, southWater, 1);
+
+let nuggetWater = rmCreateObjectDef('nugget water' + i);
+rmAddObjectDefItem(nuggetWater, 'ypNuggetBoat', 1, 0.0);
+rmAddObjectDefToClass(nuggetWater, nuggetClass);
+rmSetNuggetDifficulty(5, 5);
+rmSetObjectDefMinDistance(nuggetWater, rmXFractionToMeters(0.0));
+rmSetObjectDefMaxDistance(nuggetWater, rmXFractionToMeters(0.5));
+rmAddObjectDefConstraint(nuggetWater, avoidTradeRoute);
+rmAddObjectDefConstraint(nuggetWater, avoidNugget);
+rmPlaceObjectDefInArea(nuggetWater, 0, southWater, cNumberNonGaiaPlayers * 2);
+
+let nuggetID = rmCreateObjectDef('nugget');
+rmAddObjectDefItem(nuggetID, 'Nugget', 1, 0.0);
+rmAddObjectDefToClass(nuggetID, nuggetClass);
+rmSetObjectDefMinDistance(nuggetID, 0.0);
+rmSetObjectDefMaxDistance(nuggetID, rmXFractionToMeters(0.5));
+rmAddObjectDefConstraint(nuggetID, avoidNugget);
+rmAddObjectDefConstraint(nuggetID, avoidAll);
+rmAddObjectDefConstraint(nuggetID, avoidTradeRoute);
+rmAddObjectDefConstraint(nuggetID, avoidTownCenterSmall);
+rmAddObjectDefConstraint(nuggetID, avoidSocket);
+rmAddObjectDefConstraint(nuggetID, avoidWater);
+rmAddObjectDefConstraint(nuggetID, circleConstraint);
+rmAddObjectDefConstraint(nuggetID, avoidCoinSmall);
+rmAddObjectDefConstraint(nuggetID, avoidIslands);
+rmSetNuggetDifficulty(1, 3);
+rmPlaceObjectDefAtLoc(nuggetID, 0, 0.5, 0.5, 6 * cNumberNonGaiaPlayers);
+
+let avoidCoinVerySmall = rmCreateTypeDistanceConstraint('avoid coin small', mineType, 6.0);
+
+let nuggetIsland = rmCreateObjectDef('nugget island');
+rmAddObjectDefItem(nuggetIsland, 'Nugget', 1, 0.0);
+rmAddObjectDefToClass(nuggetIsland, nuggetClass);
+rmAddObjectDefConstraint(nuggetIsland, avoidCoinVerySmall);
+rmAddObjectDefConstraint(nuggetIsland, avoidAll);
 rmSetNuggetDifficulty(4, 4);
-rmAddObjectDefToClass(nugget4, rmClassID('classNugget'));
-rmSetObjectDefMinDistance(nugget4, 0.0);
-rmSetObjectDefMaxDistance(nugget4, rmXFractionToMeters(0.4));
-rmAddObjectDefConstraint(nugget4, avoidResource);
-rmAddObjectDefConstraint(nugget4, shortAvoidImpassableLand);
-rmAddObjectDefConstraint(nugget4, avoidTradeRouteSockets);
-rmAddObjectDefConstraint(nugget4, avoidTradeRoute);
-rmAddObjectDefConstraint(nugget4, mediumPlayerConstraint);
-rmAddObjectDefConstraint(nugget4, shortAvoidCanyons);
-rmAddObjectDefConstraint(nugget4, avoidStartingUnits);
-rmAddObjectDefConstraint(nugget4, avoidNugget);
-rmAddObjectDefConstraint(nugget4, avoidNatives);
-rmAddObjectDefConstraint(nugget4, circleConstraint);
-rmPlaceObjectDefAtLoc(nugget4, 0, 0.5, 0.5, rmRandInt(0, 3));
-/*
-var nuggetID=rmCreateObjectDef("nugget");
-    rmAddObjectDefItem(nuggetID, "Nugget", 1, 2.0);
-    rmSetObjectDefMinDistance(nuggetID, 0.0);
-    rmSetObjectDefMaxDistance(nuggetID, rmXFractionToMeters(0.49));
-    rmAddObjectDefConstraint(nuggetID, avoidImpassableLand);
-    rmAddObjectDefToClass(nuggetID, rmClassID("classNugget"));
-    rmAddObjectDefConstraint(nuggetID, avoidNugget);
-    rmAddObjectDefConstraint(nuggetID, shortAvoidSilver);
-//	rmAddObjectDefConstraint(nuggetID, avoidResource);
-    rmAddObjectDefConstraint(nuggetID, canyonConstraint);
-    rmAddObjectDefConstraint(nuggetID, avoidTradeRoute);
-    rmAddObjectDefConstraint(nuggetID, shortForestConstraint);
-    rmAddObjectDefConstraint(nuggetID, circleConstraint);
-    rmAddObjectDefConstraint(nuggetID, playerConstraint);
-    rmAddObjectDefConstraint(nuggetID, avoidNatives);
-    rmPlaceObjectDefAtLoc(nuggetID, 0, 0.5, 0.5, 6*cNumberNonGaiaPlayers);
-*/
-var buzzardFlockID = rmCreateObjectDef('buzzards');
-rmAddObjectDefItem(buzzardFlockID, 'BuzzardFlock', 1, 3.0);
-rmSetObjectDefMinDistance(buzzardFlockID, 0.0);
-rmSetObjectDefMaxDistance(buzzardFlockID, rmXFractionToMeters(0.3));
-rmAddObjectDefConstraint(buzzardFlockID, avoidBuzzards);
-rmAddObjectDefConstraint(buzzardFlockID, avoidTradeRouteSockets);
-rmAddObjectDefConstraint(buzzardFlockID, avoidImpassableLand);
-rmAddObjectDefConstraint(buzzardFlockID, playerConstraint);
-rmPlaceObjectDefAtLoc(buzzardFlockID, 0, 0.5, 0.5, 2 * cNumberNonGaiaPlayers);
-var randomVultureTreeID = rmCreateObjectDef('random vulture tree');
-rmAddObjectDefItem(randomVultureTreeID, 'PropVulturePerching', 1, 3.0);
-rmSetObjectDefMinDistance(randomVultureTreeID, 0.0);
-rmSetObjectDefMaxDistance(randomVultureTreeID, rmXFractionToMeters(0.4));
-rmAddObjectDefConstraint(randomVultureTreeID, avoidImpassableLand);
-rmAddObjectDefConstraint(randomVultureTreeID, playerConstraint);
-rmAddObjectDefConstraint(randomVultureTreeID, avoidVultures);
-rmAddObjectDefConstraint(randomVultureTreeID, avoidTradeRoute);
-rmAddObjectDefConstraint(randomVultureTreeID, avoidTradeRouteSockets);
-rmPlaceObjectDefAtLoc(randomVultureTreeID, 0, 0.5, 0.5, 1.5 * cNumberNonGaiaPlayers);
-if (cNumberNonGaiaPlayers < 5)
-    var bisonCount = 4 * cNumberNonGaiaPlayers;
-else
-    bisonCount = 2 * cNumberNonGaiaPlayers;
-var bisonID = rmCreateObjectDef('Bison herd');
-rmAddObjectDefItem(bisonID, 'bison', rmRandInt(6, 8), 6.0);
-rmSetObjectDefCreateHerd(bisonID, true);
-rmSetObjectDefMinDistance(bisonID, 0.0);
-rmSetObjectDefMaxDistance(bisonID, rmXFractionToMeters(0.4));
-rmAddObjectDefConstraint(bisonID, shortAvoidResource);
-rmAddObjectDefConstraint(bisonID, centerConstraint);
-rmAddObjectDefConstraint(bisonID, avoidImpassableLand);
-rmAddObjectDefConstraint(bisonID, avoidBison);
-rmAddObjectDefConstraint(bisonID, shortAvoidNatives);
-rmAddObjectDefConstraint(bisonID, veryShortAvoidCanyons);
-rmAddObjectDefConstraint(bisonID, avoidPronghorn);
-rmAddObjectDefConstraint(bisonID, shortAvoidNugget);
-rmAddObjectDefConstraint(bisonID, mediumPlayerConstraint);
-rmAddObjectDefConstraint(bisonID, avoidTradeRouteSockets);
-rmPlaceObjectDefAtLoc(bisonID, 0, 0.5, 0.5, bisonCount);
-if (cNumberNonGaiaPlayers < 5)
-    var pronghornCount = 4 * cNumberNonGaiaPlayers;
-else
-    pronghornCount = 2.25 * cNumberNonGaiaPlayers;
-var pronghornID = rmCreateObjectDef('pronghorn herd');
-rmAddObjectDefItem(pronghornID, 'Pronghorn', rmRandInt(8, 10), 6.0);
-rmSetObjectDefCreateHerd(pronghornID, true);
-rmSetObjectDefMinDistance(pronghornID, 0.0);
-rmSetObjectDefMaxDistance(pronghornID, rmXFractionToMeters(0.4));
-rmAddObjectDefConstraint(pronghornID, shortAvoidResource);
-rmAddObjectDefConstraint(pronghornID, centerConstraint);
-rmAddObjectDefConstraint(pronghornID, avoidImpassableLand);
-rmAddObjectDefConstraint(pronghornID, shortAvoidNatives);
-rmAddObjectDefConstraint(pronghornID, veryShortAvoidCanyons);
-rmAddObjectDefConstraint(pronghornID, avoidPronghorn);
-rmAddObjectDefConstraint(pronghornID, shortAvoidNugget);
-rmAddObjectDefConstraint(pronghornID, mediumPlayerConstraint);
-rmAddObjectDefConstraint(pronghornID, avoidBison);
-rmAddObjectDefConstraint(pronghornID, avoidTradeRouteSockets);
-rmPlaceObjectDefAtLoc(pronghornID, 0, 0.5, 0.5, pronghornCount);
-for (i = 0; i < 10;) {
-    var dirtPatch = rmCreateArea('open dirt patch ' + i);
-    rmSetAreaWarnFailure(dirtPatch, false);
-    rmSetAreaSize(dirtPatch, rmAreaTilesToFraction(200), rmAreaTilesToFraction(300));
-    rmSetAreaTerrainType(dirtPatch, 'sonoraground7_son');
-    // rmAddAreaTerrainLayer(dirtPatch, "great_plains\ground2_gp", 0, 1);
-    rmAddAreaToClass(dirtPatch, rmClassID('classPatch'));
-    //rmSetAreaBaseHeight(dirtPatch, 4.0);
-    rmSetAreaMinBlobs(dirtPatch, 1);
-    rmSetAreaMaxBlobs(dirtPatch, 5);
-    rmSetAreaMinBlobDistance(dirtPatch, 16.0);
-    rmSetAreaMaxBlobDistance(dirtPatch, 40.0);
-    rmSetAreaCoherence(dirtPatch, 0.0);
-    rmSetAreaSmoothDistance(dirtPatch, 10);
-    rmAddAreaConstraint(dirtPatch, shortAvoidImpassableLand);
-    rmAddAreaConstraint(dirtPatch, patchConstraint);
-    rmBuildArea(dirtPatch);
+rmPlaceObjectDefInArea(nuggetIsland, 0, eastIsland, 1);
+rmPlaceObjectDefInArea(nuggetIsland, 0, westIsland, 1);
+
+if (rmGetIsKOTH()) {
+    ypKingsHillPlacer(0.5, 0.5, 0.0, 0);
 }
-// Text
-rmSetStatusText('', 1.0);
+*/
