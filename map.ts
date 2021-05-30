@@ -1,11 +1,11 @@
 // Gold Coast
 rmSetStatusText('', 0.01);
 
-import { TERRAINS } from './some';
+import { TERRAINS, CLIFF } from './some';
 
 /// Nature variables
 
-let mainTerrainType = TERRAINS.GREAT_PLAINS_DEFAULT;
+let mainTerrainType = TERRAINS.TOTO;
 /*
 let islandTerrainType = TERRAINS.CALIFORNIA_GROUNDSHORE1_CAL;
 let waterType = WATER.CARIBBEAN_COAST;

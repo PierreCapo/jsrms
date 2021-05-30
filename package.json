@@ -7,7 +7,7 @@
         "uuid": "^8.3.2"
     },
     "scripts": {
-        "start": "nodemon -e js .\\compiler\\toto.js ",
+        "start": "nodemon -e js ./compiler/toto.js ",
         "tsc": "tsc --watch",
         "test": "jest",
         "test:watch": "jest --watch",

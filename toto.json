@@ -1,1 +1,1 @@
-"rmSetStatusText(\"\", 0.01);\nyolo\nmainTerrainType=yolo;"
+"rmSetStatusText(\"\", 0.01);\nerrorCannotParseNode\n mainTerrainType=0;"

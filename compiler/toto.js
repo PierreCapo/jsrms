@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
@@ -20,10 +31,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateMapInRMS = void 0;
+var some_1 = require("./some");
+var common_1 = require("./common");
 var ts = __importStar(require("typescript"));
 var fs = __importStar(require("fs"));
 var cmd = ts.parseCommandLine([]);
-var program = ts.createProgram(['map.ts', 'some.ts'], cmd.options);
+var program = ts.createProgram(['map.ts', 'some.ts', 'common.ts'], cmd.options);
+// For whatever reason not calling this line makes the AST parsing crash with multiple files
+var typechecker = program.getTypeChecker();
 var sourceFile = program.getSourceFile('map.ts');
 var empty = function () { };
 // Dummy transformation context
@@ -45,39 +60,17 @@ var context = {
     onSubstituteNode: function (hint, node) { return node; },
     factory: ts.factory,
 };
+// TODO: get rid of this hardcoded imports, most likely something like that already exist on Typescript
+var availableImports = __assign(__assign({}, some_1.TERRAINS), some_1.CLIFF);
 var transformer = function (context) {
     return function (sourceFile) {
         var visitor = function (node) {
-            /*    if (ts.isImportDeclaration(node) && ts.isStringLiteral(node.moduleSpecifier)) {
-                const typeChecker = program.getTypeChecker();
-                const importSymbol = typeChecker.getSymbolAtLocation(node.moduleSpecifier);
-                let baba = typeChecker.getTypeAtLocation;
-                console.log(baba);
-                return node;
-            }*/
             if (ts.isPropertyAccessExpression(node)) {
-                var typeChecker = program.getTypeChecker();
-                // console.log(node);
-                var personType = typeChecker.getTypeAtLocation(node.expression);
-                console.log(typeChecker.typeToString(personType));
-                for (var _i = 0, _a = personType.getProperties(); _i < _a.length; _i++) {
-                    var property = _a[_i];
-                    console.log(property);
+                var expression = node.name;
+                if (ts.isIdentifier(expression)) {
+                    var result_1 = availableImports[expression.getFullText()];
+                    return result_1.generateNode();
                 }
-                if (node.name.escapedText === 'CALIFORNIA_GROUND6_CAL') {
-                    return ts.factory.createStringLiteral('hello world');
-                }
-                // @ts-ignore
-                /*       switch (node.escapedText) {
-                    case 'CLIFF':
-                        console.log('wololo');
-                        return ts.factory.createIdentifier('typescript');
-
-                    case 'CALIFORNIA':
-                        console.log('walala');
-
-                        return ts.factory.createIdentifier('transformers');
-                }*/
             }
             return ts.visitEachChild(node, visitor, context);
         };
@@ -100,10 +93,12 @@ function visitAndTranspileToRMS(node) {
             return castedIdentifierNode.text;
         case ts.SyntaxKind.StringLiteral:
             var nodeStringLiteral = node;
-            return '"' + nodeStringLiteral.text + '"';
+            var stringRepresentable = new common_1.StringRepresentable(nodeStringLiteral.text);
+            return stringRepresentable.generateStringFromNode();
         case ts.SyntaxKind.NumericLiteral:
             var nodeNumericLiteral = node;
-            return nodeNumericLiteral.text;
+            var numericRepresentable = new common_1.NumberRepresentable(nodeNumericLiteral.text);
+            return numericRepresentable.generateStringFromNode();
         case ts.SyntaxKind.FirstStatement:
             var nodeFirstStatement = node;
             return visitAndTranspileToRMS(nodeFirstStatement.declarationList);
@@ -142,11 +137,11 @@ function visitAndTranspileToRMS(node) {
             return 'break';
         case ts.SyntaxKind.VariableDeclaration:
             var nodeVariableDeclaration = node;
-            // console.log(nodeVariableDeclaration);
-            return visitAndTranspileToRMS(nodeVariableDeclaration.name) + '=' + visitAndTranspileToRMS(nodeVariableDeclaration.initializer);
+            console.log(nodeVariableDeclaration.initializer);
+            return ' ' + visitAndTranspileToRMS(nodeVariableDeclaration.name) + '=' + visitAndTranspileToRMS(nodeVariableDeclaration.initializer);
         default:
             console.log(ts.SyntaxKind[node.kind]);
-            return 'yolo';
+            return 'errorCannotParseNode';
     }
 }
 var getOperatorParser = function (operator) {

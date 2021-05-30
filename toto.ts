@@ -1,8 +1,14 @@
+import { TERRAINS, CLIFF } from './some';
+import { NumberRepresentable, Representable, StringRepresentable } from './common';
 import * as ts from 'typescript';
 import * as fs from 'fs';
 
 let cmd = ts.parseCommandLine([]);
-let program = ts.createProgram(['map.ts', 'some.ts'], cmd.options);
+let program = ts.createProgram(['map.ts', 'some.ts', 'common.ts'], cmd.options);
+
+// For whatever reason not calling this line makes the AST parsing crash with multiple files
+let typechecker = program.getTypeChecker();
+
 let sourceFile = program.getSourceFile('map.ts');
 
 let empty = () => {};
@@ -26,40 +32,24 @@ let context: ts.TransformationContext = {
     factory: ts.factory,
 };
 
+interface Imports {
+    title: string;
+    content: { string: Representable };
+}
+
+// TODO: get rid of this hardcoded imports, most likely something like that already exist on Typescript
+let availableImports: { [key: string]: Representable } = { ...TERRAINS, ...CLIFF };
+
 const transformer: ts.TransformerFactory<ts.SourceFile> = (context) => {
     return (sourceFile) => {
         const visitor = (node: ts.Node): ts.Node => {
-            /*    if (ts.isImportDeclaration(node) && ts.isStringLiteral(node.moduleSpecifier)) {
-                const typeChecker = program.getTypeChecker();
-                const importSymbol = typeChecker.getSymbolAtLocation(node.moduleSpecifier);
-                let baba = typeChecker.getTypeAtLocation;
-                console.log(baba);
-                return node;
-            }*/
             if (ts.isPropertyAccessExpression(node)) {
-                const typeChecker = program.getTypeChecker();
-                // console.log(node);
-                const personType = typeChecker.getTypeAtLocation(node.expression);
-                console.log(typeChecker.typeToString(personType));
-                for (const property of personType.getProperties()) {
-                    console.log(property);
+                let expression = node.name;
+                if (ts.isIdentifier(expression)) {
+                    let result = availableImports[expression.getFullText()];
+                    return result.generateNode();
                 }
-                if (node.name.escapedText === 'CALIFORNIA_GROUND6_CAL') {
-                    return ts.factory.createStringLiteral('hello world');
-                }
-                // @ts-ignore
-                /*       switch (node.escapedText) {
-                    case 'CLIFF':
-                        console.log('wololo');
-                        return ts.factory.createIdentifier('typescript');
-
-                    case 'CALIFORNIA':
-                        console.log('walala');
-
-                        return ts.factory.createIdentifier('transformers');
-                }*/
             }
-
             return ts.visitEachChild(node, visitor, context);
         };
 
@@ -87,11 +77,13 @@ function visitAndTranspileToRMS(node: ts.Node): string {
 
         case ts.SyntaxKind.StringLiteral:
             let nodeStringLiteral = node as ts.StringLiteral;
-            return '"' + nodeStringLiteral.text + '"';
+            let stringRepresentable = new StringRepresentable(nodeStringLiteral.text);
+            return stringRepresentable.generateStringFromNode();
 
         case ts.SyntaxKind.NumericLiteral:
             let nodeNumericLiteral = node as ts.NumericLiteral;
-            return nodeNumericLiteral.text;
+            let numericRepresentable = new NumberRepresentable(nodeNumericLiteral.text);
+            return numericRepresentable.generateStringFromNode();
 
         case ts.SyntaxKind.FirstStatement:
             let nodeFirstStatement = node as ts.VariableStatement;
@@ -153,12 +145,15 @@ function visitAndTranspileToRMS(node: ts.Node): string {
 
         case ts.SyntaxKind.VariableDeclaration:
             let nodeVariableDeclaration = node as ts.VariableDeclaration;
-            // console.log(nodeVariableDeclaration);
+            console.log(nodeVariableDeclaration.initializer);
+            let initializer = nodeVariableDeclaration.initializer;
+            if (ts.isObjectLiteralExpression(nodeVariableDeclaration.initializer)) {
+            }
             return visitAndTranspileToRMS(nodeVariableDeclaration.name) + '=' + visitAndTranspileToRMS(nodeVariableDeclaration.initializer);
 
         default:
             console.log(ts.SyntaxKind[node.kind]);
-            return 'yolo';
+            return 'errorCannotParseNode';
     }
 }
 

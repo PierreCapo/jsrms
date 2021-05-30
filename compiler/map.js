@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 rmSetStatusText('', 0.01);
 var some_1 = require("./some");
 /// Nature variables
-var mainTerrainType = some_1.TERRAINS.GREAT_PLAINS_DEFAULT;
+var mainTerrainType = some_1.TERRAINS.TOTO;
 /*
 let islandTerrainType = TERRAINS.CALIFORNIA_GROUNDSHORE1_CAL;
 let waterType = WATER.CARIBBEAN_COAST;
