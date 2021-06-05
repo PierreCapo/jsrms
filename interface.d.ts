@@ -520,7 +520,7 @@ declare const rmPlaceFairLocs: () => boolean;
 /**
  * Adds some fairLoc placement info.
  */
-declare const rmAddFairLoc: (unitName: string, forward: boolean, inside: boolean, minPlayerDist: float, maxPlayerDist: float, locDist: float, edgeDist: float, playerArea: integer, teamArea: integer) => integer;
+declare const rmAddFairLoc: (unitName: string, forward: boolean, inside: boolean, minPlayerDist: float, maxPlayerDist: float, locDist: float, edgeDist: float, playerArea?: integer, teamArea?: integer) => integer;
 /**
  * Gets a player\s start location z fraction.
  */
