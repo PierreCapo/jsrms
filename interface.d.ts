@@ -276,7 +276,7 @@ declare const rmPlaceObjectDefAtPoint: (defID: integer, playerID: integer, point
 /**
  * Place object definition at specific location for given player.
  */
-declare const rmPlaceObjectDefAtLoc: (defID: integer, playerID: integer, xFraction: float, zFraction: float, placeCount?: integer) => void;
+declare const rmPlaceObjectDefAtLoc: (defID: integer, playerID: integer, xFraction: float, zFraction: float, placeCount?: integer) => integer;
 /**
  * Add item to object definition.
  */
