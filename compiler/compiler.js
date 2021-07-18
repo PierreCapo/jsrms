@@ -77,7 +77,8 @@ var transformer = function (context) {
         return ts.visitNode(sourceFile, visitor);
     };
 };
-function visitAndTranspileToRMS(node) {
+function visitAndTranspileToRMS(node, typeInformationOnly) {
+    if (typeInformationOnly === void 0) { typeInformationOnly = false; }
     switch (node.kind) {
         case ts.SyntaxKind.SourceFile:
             var nodeSourceFile = node;
@@ -90,15 +91,30 @@ function visitAndTranspileToRMS(node) {
             return visitAndTranspileToRMS(nodeCallExpression.expression) + '(' + nodeCallExpression.arguments.map(function (child) { return visitAndTranspileToRMS(child); }).join(', ') + ')';
         case ts.SyntaxKind.Identifier:
             var castedIdentifierNode = node;
-            return castedIdentifierNode.text;
+            if (typeInformationOnly) {
+                return castedIdentifierNode.text;
+            }
+            else {
+                return castedIdentifierNode.text;
+            }
         case ts.SyntaxKind.StringLiteral:
             var nodeStringLiteral = node;
             var stringRepresentable = new common_1.StringRepresentable(nodeStringLiteral.text);
-            return stringRepresentable.generateStringFromNode();
+            if (typeInformationOnly) {
+                return stringRepresentable.generateTypeFromNode();
+            }
+            else {
+                return stringRepresentable.generateStringFromNode();
+            }
         case ts.SyntaxKind.NumericLiteral:
             var nodeNumericLiteral = node;
             var numericRepresentable = new common_1.NumberRepresentable(nodeNumericLiteral.text);
-            return numericRepresentable.generateStringFromNode();
+            if (typeInformationOnly) {
+                return numericRepresentable.generateTypeFromNode();
+            }
+            else {
+                return numericRepresentable.generateStringFromNode();
+            }
         case ts.SyntaxKind.FirstStatement:
             var nodeFirstStatement = node;
             return visitAndTranspileToRMS(nodeFirstStatement.declarationList);
@@ -106,9 +122,21 @@ function visitAndTranspileToRMS(node) {
             var nodeVariableDeclarationList = node;
             return nodeVariableDeclarationList.declarations.map(function (child) { return visitAndTranspileToRMS(child); }).join(',') + ';';
         case ts.SyntaxKind.TrueKeyword:
-            return 'true';
+            var trueRepresentable = new common_1.BoolRepresentable(true);
+            if (typeInformationOnly) {
+                return trueRepresentable.generateTypeFromNode();
+            }
+            else {
+                return trueRepresentable.generateStringFromNode();
+            }
         case ts.SyntaxKind.FalseKeyword:
-            return 'false';
+            var falseRepresentable = new common_1.BoolRepresentable(false);
+            if (typeInformationOnly) {
+                return falseRepresentable.generateTypeFromNode();
+            }
+            else {
+                return falseRepresentable.generateStringFromNode();
+            }
         case ts.SyntaxKind.BinaryExpression:
             var nodeBinaryExpression = node;
             return visitAndTranspileToRMS(nodeBinaryExpression.left) + ' ' + getOperatorParser(nodeBinaryExpression.operatorToken.kind) + ' ' + visitAndTranspileToRMS(nodeBinaryExpression.right);
@@ -137,13 +165,20 @@ function visitAndTranspileToRMS(node) {
             return 'break';
         case ts.SyntaxKind.VariableDeclaration:
             var nodeVariableDeclaration = node;
-            console.log(nodeVariableDeclaration.initializer);
-            return ' ' + visitAndTranspileToRMS(nodeVariableDeclaration.name) + '=' + visitAndTranspileToRMS(nodeVariableDeclaration.initializer);
+            //  console.log(nodeVariableDeclaration.initializer);
+            var initializer = nodeVariableDeclaration.initializer;
+            if (ts.isObjectLiteralExpression(nodeVariableDeclaration.initializer)) {
+            }
+            console.log(visitTypeNode(nodeVariableDeclaration.type));
+            return visitAndTranspileToRMS(nodeVariableDeclaration.initializer, true) + ' ' + visitAndTranspileToRMS(nodeVariableDeclaration.name) + ' = ' + visitAndTranspileToRMS(nodeVariableDeclaration.initializer);
         default:
-            console.log(ts.SyntaxKind[node.kind]);
+            //  console.log(ts.SyntaxKind[node.kind]);
             return 'errorCannotParseNode';
     }
 }
+var visitTypeNode = function (toto) {
+    console.log(toto);
+};
 var getOperatorParser = function (operator) {
     switch (operator) {
         case ts.SyntaxKind.EqualsEqualsEqualsToken:

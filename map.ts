@@ -1,11 +1,14 @@
 // Gold Coast
 rmSetStatusText('', 0.01);
 
-import { TERRAINS, CLIFF } from './some';
+//import { TERRAINS, CLIFF } from './some';
+
+let toto = rmCreateArea('ezrre');
+rmSetMapElevationHeightBlend(5);
 
 /// Nature variables
 
-let mainTerrainType = TERRAINS.TOTO;
+//let mainTerrainType = TERRAINS.TOTO;
 /*
 let islandTerrainType = TERRAINS.CALIFORNIA_GROUNDSHORE1_CAL;
 let waterType = WATER.CARIBBEAN_COAST;

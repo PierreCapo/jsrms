@@ -1,5 +1,5 @@
 import { TERRAINS, CLIFF } from './some';
-import { NumberRepresentable, Representable, StringRepresentable } from './common';
+import { NumberRepresentable, Representable, StringRepresentable, BoolRepresentable } from './common';
 import * as ts from 'typescript';
 import * as fs from 'fs';
 
@@ -57,7 +57,7 @@ const transformer: ts.TransformerFactory<ts.SourceFile> = (context) => {
     };
 };
 
-function visitAndTranspileToRMS(node: ts.Node): string {
+function visitAndTranspileToRMS(node: ts.Node, typeInformationOnly = false): string {
     switch (node.kind) {
         case ts.SyntaxKind.SourceFile:
             let nodeSourceFile = node as ts.SourceFile;
@@ -73,17 +73,29 @@ function visitAndTranspileToRMS(node: ts.Node): string {
 
         case ts.SyntaxKind.Identifier:
             let castedIdentifierNode = node as ts.Identifier;
-            return castedIdentifierNode.text;
+            if (typeInformationOnly) {
+                return castedIdentifierNode.text;
+            } else {
+                return castedIdentifierNode.text;
+            }
 
         case ts.SyntaxKind.StringLiteral:
             let nodeStringLiteral = node as ts.StringLiteral;
             let stringRepresentable = new StringRepresentable(nodeStringLiteral.text);
-            return stringRepresentable.generateStringFromNode();
+            if (typeInformationOnly) {
+                return stringRepresentable.generateTypeFromNode();
+            } else {
+                return stringRepresentable.generateStringFromNode();
+            }
 
         case ts.SyntaxKind.NumericLiteral:
             let nodeNumericLiteral = node as ts.NumericLiteral;
             let numericRepresentable = new NumberRepresentable(nodeNumericLiteral.text);
-            return numericRepresentable.generateStringFromNode();
+            if (typeInformationOnly) {
+                return numericRepresentable.generateTypeFromNode();
+            } else {
+                return numericRepresentable.generateStringFromNode();
+            }
 
         case ts.SyntaxKind.FirstStatement:
             let nodeFirstStatement = node as ts.VariableStatement;
@@ -94,10 +106,20 @@ function visitAndTranspileToRMS(node: ts.Node): string {
             return nodeVariableDeclarationList.declarations.map((child) => visitAndTranspileToRMS(child)).join(',') + ';';
 
         case ts.SyntaxKind.TrueKeyword:
-            return 'true';
+            let trueRepresentable = new BoolRepresentable(true);
+            if (typeInformationOnly) {
+                return trueRepresentable.generateTypeFromNode();
+            } else {
+                return trueRepresentable.generateStringFromNode();
+            }
 
         case ts.SyntaxKind.FalseKeyword:
-            return 'false';
+            let falseRepresentable = new BoolRepresentable(false);
+            if (typeInformationOnly) {
+                return falseRepresentable.generateTypeFromNode();
+            } else {
+                return falseRepresentable.generateStringFromNode();
+            }
 
         case ts.SyntaxKind.BinaryExpression:
             let nodeBinaryExpression = node as ts.BinaryExpression;
@@ -145,17 +167,22 @@ function visitAndTranspileToRMS(node: ts.Node): string {
 
         case ts.SyntaxKind.VariableDeclaration:
             let nodeVariableDeclaration = node as ts.VariableDeclaration;
-            console.log(nodeVariableDeclaration.initializer);
+            //  console.log(nodeVariableDeclaration.initializer);
             let initializer = nodeVariableDeclaration.initializer;
             if (ts.isObjectLiteralExpression(nodeVariableDeclaration.initializer)) {
             }
-            return visitAndTranspileToRMS(nodeVariableDeclaration.name) + '=' + visitAndTranspileToRMS(nodeVariableDeclaration.initializer);
+            console.log(visitTypeNode(nodeVariableDeclaration.type));
+            return visitAndTranspileToRMS(nodeVariableDeclaration.initializer, true) + ' ' + visitAndTranspileToRMS(nodeVariableDeclaration.name) + ' = ' + visitAndTranspileToRMS(nodeVariableDeclaration.initializer);
 
         default:
-            console.log(ts.SyntaxKind[node.kind]);
+            //  console.log(ts.SyntaxKind[node.kind]);
             return 'errorCannotParseNode';
     }
 }
+
+let visitTypeNode = (toto: ts.TypeNode) => {
+    console.log(toto);
+};
 
 let getOperatorParser = (operator: number) => {
     switch (operator) {

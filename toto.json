@@ -1,1 +1,1 @@
-"rmSetStatusText(\"\", 0.01);\nerrorCannotParseNode\n mainTerrainType=0;"
+"rmSetStatusText(\"\", 0.01);\nrmCreateArea(\"ezrre\") toto = rmCreateArea(\"ezrre\");\nrmSetMapElevationHeightBlend(5);"

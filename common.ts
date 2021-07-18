@@ -39,7 +39,7 @@ export class StringRepresentable implements Representable {
         this.value = value;
     }
     generateNode = (): ts.Node => {
-        return factory.createObjectLiteralExpression([factory.createPropertyAssignment(factory.createIdentifier(identifierKey), factory.createStringLiteral(this.identifier)), factory.createPropertyAssignment(factory.createIdentifier(valueKey), factory.createNumericLiteral(this.value))], false);
+        return factory.createObjectLiteralExpression([factory.createPropertyAssignment(factory.createIdentifier(identifierKey), factory.createStringLiteral(this.identifier)), factory.createPropertyAssignment(factory.createIdentifier(valueKey), factory.createStringLiteral(this.value))], false);
     };
 
     generateStringFromNode = (): string => {
@@ -69,5 +69,24 @@ export class NumberRepresentable implements Representable {
         } else {
             return 'float';
         }
+    };
+}
+
+export class BoolRepresentable implements Representable {
+    identifier: 'BOOL';
+    value: boolean;
+    constructor(value: boolean) {
+        this.value = value;
+    }
+    generateNode = (): ts.Node => {
+        return ts.factory.createStringLiteral('hello world');
+    };
+
+    generateStringFromNode = (): string => {
+        return `${this.value}`;
+    };
+
+    generateTypeFromNode = (): string => {
+        return 'bool';
     };
 }

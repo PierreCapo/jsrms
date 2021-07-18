@@ -19,7 +19,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.NumberRepresentable = exports.StringRepresentable = exports.VectorRepresentable = void 0;
+exports.BoolRepresentable = exports.NumberRepresentable = exports.StringRepresentable = exports.VectorRepresentable = void 0;
 var ts = __importStar(require("typescript"));
 var factory = ts.factory;
 var identifierKey = 'IDENTIFIER';
@@ -45,7 +45,7 @@ var StringRepresentable = /** @class */ (function () {
     function StringRepresentable(value) {
         var _this = this;
         this.generateNode = function () {
-            return factory.createObjectLiteralExpression([factory.createPropertyAssignment(factory.createIdentifier(identifierKey), factory.createStringLiteral(_this.identifier)), factory.createPropertyAssignment(factory.createIdentifier(valueKey), factory.createNumericLiteral(_this.value))], false);
+            return factory.createObjectLiteralExpression([factory.createPropertyAssignment(factory.createIdentifier(identifierKey), factory.createStringLiteral(_this.identifier)), factory.createPropertyAssignment(factory.createIdentifier(valueKey), factory.createStringLiteral(_this.value))], false);
         };
         this.generateStringFromNode = function () {
             return "\"" + _this.value + "\"";
@@ -80,3 +80,20 @@ var NumberRepresentable = /** @class */ (function () {
     return NumberRepresentable;
 }());
 exports.NumberRepresentable = NumberRepresentable;
+var BoolRepresentable = /** @class */ (function () {
+    function BoolRepresentable(value) {
+        var _this = this;
+        this.generateNode = function () {
+            return ts.factory.createStringLiteral('hello world');
+        };
+        this.generateStringFromNode = function () {
+            return "" + _this.value;
+        };
+        this.generateTypeFromNode = function () {
+            return 'bool';
+        };
+        this.value = value;
+    }
+    return BoolRepresentable;
+}());
+exports.BoolRepresentable = BoolRepresentable;

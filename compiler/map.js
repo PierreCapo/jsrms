@@ -1,10 +1,10 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 // Gold Coast
 rmSetStatusText('', 0.01);
-var some_1 = require("./some");
+//import { TERRAINS, CLIFF } from './some';
+var toto = rmCreateArea('ezrre');
+rmSetMapElevationHeightBlend(5);
 /// Nature variables
-var mainTerrainType = some_1.TERRAINS.TOTO;
+//let mainTerrainType = TERRAINS.TOTO;
 /*
 let islandTerrainType = TERRAINS.CALIFORNIA_GROUNDSHORE1_CAL;
 let waterType = WATER.CARIBBEAN_COAST;

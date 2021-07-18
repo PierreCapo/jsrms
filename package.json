@@ -7,11 +7,11 @@
         "uuid": "^8.3.2"
     },
     "scripts": {
-        "start": "nodemon -e js ./compiler/toto.js ",
+        "start": "nodemon -e js ./compiler/compiler.js ",
         "tsc": "tsc --watch",
         "test": "jest",
         "test:watch": "jest --watch",
-        "toto": "ttsc ./toto.ts"
+        "toto": "ttsc ./compiler.ts"
     },
     "devDependencies": {
         "@types/jest": "^26.0.20",
